@@ -81,23 +81,24 @@ def main():
         )
     info['one-hot']['kwargs'] = None
 
-    graphs = assemble_graph_descriptors(
-            rxn_components, reactions, rxn_smiles
-            )
-    for n in np.arange(2, 11):
-        info['graphs_WL{}'.format(n)] = defaultdict()
-        info['graphs_WL{}'.format(n)]['dir'] = 'graph_descriptors/WL{}'.format(n)
-        info['graphs_WL{}'.format(n)]['X_type'] = 'graphs'
-        info['graphs_WL{}'.format(n)]['model_names'] = [
-            'SVR - Precomputed Kernel', 
-            'SVR - Linear Kernel', 'SVR - Poly Kernel', 'SVR - RBF Kernel',
-            'SVR - Sigmoid Kernel', 'Random Forest',
-            'Linear Regression', 'k-Nearest Neighbours', 
-            'Bayes Generalised Linear Model',
-            'Gradient Boosting', 'Decision Tree'
-            ]
-        info['graphs_WL{}'.format(n)]['X'] = graphs
-        info['graphs_WL{}'.format(n)]['kwargs'] = {'niter': int(n)}
+    graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles)
+    wl_kernel_functions = ['linear', 'polynomial', 'sigmoid'] # 'rbf'
+    for i in wl_kernel_functions:
+        for n in np.arange(2, 11):
+            #print("wl_kernel_functions", i, n)
+            info['graphs_WL{}_{}'.format(i, n)] = defaultdict()
+            info['graphs_WL{}_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)
+            info['graphs_WL{}_{}'.format(i, n)]['X_type'] = 'graphs'
+            info['graphs_WL{}_{}'.format(i, n)]['model_names'] = [
+                'SVR - Precomputed Kernel', 
+                'SVR - Linear Kernel', 'SVR - Poly Kernel', 'SVR - RBF Kernel',
+                'SVR - Sigmoid Kernel', 'Random Forest',
+                'Linear Regression', 'k-Nearest Neighbours', 
+                'Bayes Generalised Linear Model',
+                'Gradient Boosting', 'Decision Tree'
+                ]
+            info['graphs_WL{}_{}'.format(i, n)]['X'] = graphs
+            info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'niter': int(n), 'kernel_function': i}
         
     for fp, fp_type, fps_kw in zip(
             [

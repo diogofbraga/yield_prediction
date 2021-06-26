@@ -116,11 +116,11 @@ def main():
     wl_kernel_functions = ['linear', 'polynomial', 'sigmoid'] # 'rbf'
     for i in wl_kernel_functions:
         for n in np.arange(2, 11):
-            print("wl_kernel_functions", i, n)
-            info['graphs_WL{}_{}'.format(n, i)] = defaultdict()
-            info['graphs_WL{}_{}'.format(n, i)]['dir'] = 'graph_descriptors/WL{}_{}'.format(n,i)
-            info['graphs_WL{}_{}'.format(n, i)]['X_type'] = 'graphs'
-            info['graphs_WL{}_{}'.format(n, i)]['model_names'] = [
+            #print("wl_kernel_functions", i, n)
+            info['graphs_WL{}_{}'.format(i, n)] = defaultdict()
+            info['graphs_WL{}_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)
+            info['graphs_WL{}_{}'.format(i, n)]['X_type'] = 'graphs'
+            info['graphs_WL{}_{}'.format(i, n)]['model_names'] = [
                 'SVR - Precomputed Kernel', 
                 'SVR - Linear Kernel', 'SVR - Poly Kernel', 'SVR - RBF Kernel',
                 'SVR - Sigmoid Kernel', 'Random Forest',
@@ -128,8 +128,8 @@ def main():
                 'Bayes Generalised Linear Model',
                 'Gradient Boosting', 'Decision Tree'
                 ]
-            info['graphs_WL{}_{}'.format(n, i)]['X'] = graphs
-            info['graphs_WL{}_{}'.format(n, i)]['kwargs'] = {'niter': int(n), 'kernel_function': i}
+            info['graphs_WL{}_{}'.format(i, n)]['X'] = graphs
+            info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'niter': int(n), 'kernel_function': i}
 
     for fp, fp_type, fps_kw in zip(
             [

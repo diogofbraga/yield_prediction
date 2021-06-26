@@ -61,7 +61,7 @@ class kernel():
             self.fitted_kernel = self.kernel.fit_transform(X)
             #print("WL Fitted NOP")
     
-    def transform_data(self, X, *args, **kwargs):
+    def transform_data(self, X):
         """
         Calculates X_fit by X_transform kernel matrix.
         """
