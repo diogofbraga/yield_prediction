@@ -9,6 +9,9 @@ import numpy as np
 import grakel.kernels as kernels
 import sklearn.metrics.pairwise as sklearn_kernels
 
+from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
+from tools.machine_learning.grakel_nonlinear.weisfeiler_lehman import WeisfeilerLehman
+
 class kernel():
     """A class that defines and calculates kernels using GraKel."""
     
@@ -37,21 +40,34 @@ class kernel():
             base_kernel = 'VertexHistogram'
         k = getattr(kernels, self.kernel_name)
         k_base = getattr(kernels, base_kernel)
+
+        if 'kernel_function' in kwargs:
+            self.kernel_function = kwargs.pop('kernel_function', None)
+
         self.kernel = k(base_kernel=k_base, *args, **kwargs)
-        # self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)
+        #self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)
         
-    def fit_and_transform(self, X):
+    def fit_and_transform(self, X, *args, **kwargs):
         """
         Fit and transform on the same dataset. Calculates X_fit by X_fit 
         kernel matrix.
         """
-        self.fitted_kernel = self.kernel.fit_transform(X)
+
+        if self.kernel_name == "WeisfeilerLehman":
+            self.kernel = WeisfeilerLehman(base_graph_kernel=VertexHistogram, *args, **kwargs)
+            self.fitted_kernel = self.kernel.fit_transform(X, self.kernel_function)
+            #print("WL Fitted")
+        else:
+            self.fitted_kernel = self.kernel.fit_transform(X)
+            #print("WL Fitted NOP")
     
-    def transform_data(self, X):
+    def transform_data(self, X, *args, **kwargs):
         """
         Calculates X_fit by X_transform kernel matrix.
         """
-        self.transformed_kernel = self.kernel.transform(X)
+        
+        self.transformed_kernel = self.kernel.transform(X, self.kernel_function)
+        #print("WL Transformed")
     
     def calcualte_reduced_X(self, X):
         """
