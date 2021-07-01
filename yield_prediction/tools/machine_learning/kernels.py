@@ -9,7 +9,7 @@ import numpy as np
 import grakel.kernels as kernels
 import sklearn.metrics.pairwise as sklearn_kernels
 
-from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
+from tools.machine_learning.grakel_nonlinear.nonlinear_kernel import NonLinearKernel
 from tools.machine_learning.grakel_nonlinear.weisfeiler_lehman import WeisfeilerLehman
 
 class kernel():
@@ -54,7 +54,7 @@ class kernel():
         """
 
         if self.kernel_name == "WeisfeilerLehman":
-            self.kernel = WeisfeilerLehman(base_graph_kernel=VertexHistogram, *args, **kwargs)
+            self.kernel = WeisfeilerLehman(base_graph_kernel=NonLinearKernel, *args, **kwargs)
             self.fitted_kernel = self.kernel.fit_transform(X, self.kernel_function)
             #print("WL Fitted")
         else:

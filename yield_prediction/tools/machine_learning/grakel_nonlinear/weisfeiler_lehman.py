@@ -11,8 +11,8 @@ from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
 
 from grakel.graph import Graph
-from tools.machine_learning.grakel_nonlinear.kernel import Kernel
-from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
+from grakel.kernels import Kernel
+from tools.machine_learning.grakel_nonlinear.nonlinear_kernel import NonLinearKernel
 
 # Python 2/3 cross-compatibility import
 from six import iteritems
@@ -31,7 +31,7 @@ class WeisfeilerLehman(Kernel):
         dictionary of parameters. General parameters concerning
         normalization, concurrency, .. will be ignored, and the
         ones of given on `__init__` will be passed in case it is needed.
-        Default `base_graph_kernel` is `VertexHistogram`.
+        Default `base_graph_kernel` is `NonLinearKernel`.
     Attributes
     ----------
     X : dict
@@ -49,7 +49,7 @@ class WeisfeilerLehman(Kernel):
     _graph_format = "dictionary"
 
     def __init__(self, n_jobs=None, verbose=False,
-                 normalize=False, n_iter=5, base_graph_kernel=VertexHistogram):
+                 normalize=False, n_iter=5, base_graph_kernel=NonLinearKernel):
         """Initialise a `weisfeiler_lehman` kernel."""
         super(WeisfeilerLehman, self).__init__(
             n_jobs=n_jobs, verbose=verbose, normalize=normalize)
@@ -65,7 +65,7 @@ class WeisfeilerLehman(Kernel):
         if not self._initialized["base_graph_kernel"]:
             base_graph_kernel = self.base_graph_kernel
             if base_graph_kernel is None:
-                base_graph_kernel, params = VertexHistogram, dict()
+                base_graph_kernel, params = NonLinearKernel, dict()
             elif type(base_graph_kernel) is type and issubclass(base_graph_kernel, Kernel):
                 params = dict()
             else:

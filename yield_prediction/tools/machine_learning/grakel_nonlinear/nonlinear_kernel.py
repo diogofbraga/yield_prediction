@@ -9,7 +9,8 @@ from collections import Iterable
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
 
-from tools.machine_learning.grakel_nonlinear.kernel import Kernel
+#from tools.machine_learning.grakel_nonlinear.kernel import Kernel
+from grakel.kernels import Kernel
 from grakel.graph import Graph
 
 from numpy import zeros
@@ -25,8 +26,8 @@ from six import iteritems
 from six import itervalues
 
 
-class VertexHistogram(Kernel):
-    """Vertex Histogram kernel as found in :cite:`sugiyama2015halting`.
+class NonLinearKernel(Kernel):
+    """
     Parameters
     ----------
     sparse : bool, or 'auto', default='auto'
@@ -40,8 +41,8 @@ class VertexHistogram(Kernel):
     """
 
     def __init__(self, n_jobs=None, normalize=False, verbose=False, sparse='auto'):
-        """Initialise a vertex histogram kernel."""
-        super(VertexHistogram, self).__init__(n_jobs=n_jobs, normalize=normalize, verbose=verbose)
+        """Initialise a non linear kernel."""
+        super(NonLinearKernel, self).__init__(n_jobs=n_jobs, normalize=normalize, verbose=verbose)
         self.sparse = sparse
         self._initialized.update({'sparse': True})
 
@@ -49,12 +50,82 @@ class VertexHistogram(Kernel):
         """Initialize all transformer arguments, needing initialization."""
         if not self._initialized["n_jobs"]:
             if self.n_jobs is not None:
-                warn('no implemented parallelization for VertexHistogram')
+                warn('no implemented parallelization for NonLinearKernel')
             self._initialized["n_jobs"] = True
         if not self._initialized["sparse"]:
             if self.sparse not in ['auto', False, True]:
                 TypeError('sparse could be False, True or auto')
             self._initialized["sparse"] = True
+
+    def fit_transform(self, X, kernel_function):
+        """Fit and transform, on the same dataset.
+        Parameters
+        ----------
+        X : iterable
+            Each element must be an iterable with at most three features and at
+            least one. The first that is obligatory is a valid graph structure
+            (adjacency matrix or edge_dictionary) while the second is
+            node_labels and the third edge_labels (that fitting the given graph
+            format). If None the kernel matrix is calculated upon fit data.
+            The test samples.
+        y : None
+            There is no need of a target in a transformer, yet the pipeline API
+            requires this parameter.
+        Returns
+        -------
+        K : numpy array, shape = [n_targets, n_input_graphs]
+            corresponding to the kernel matrix, a calculation between
+            all pairs of graphs between target an features
+        """
+        self._method_calling = 2
+        self.fit(X)
+
+        # Transform - calculate kernel matrix
+        km = self._calculate_kernel_matrix(kernel_function=kernel_function)
+
+        self._X_diag = np.diagonal(km)
+        if self.normalize:
+            return km / np.sqrt(np.outer(self._X_diag, self._X_diag))
+        else:
+            return km
+
+    def transform(self, X, kernel_function):
+        """Calculate the kernel matrix, between given and fitted dataset.
+        Parameters
+        ----------
+        X : iterable
+            Each element must be an iterable with at most three features and at
+            least one. The first that is obligatory is a valid graph structure
+            (adjacency matrix or edge_dictionary) while the second is
+            node_labels and the third edge_labels (that fitting the given graph
+            format). If None the kernel matrix is calculated upon fit data.
+            The test samples.
+        Returns
+        -------
+        K : numpy array, shape = [n_targets, n_input_graphs]
+            corresponding to the kernel matrix, a calculation between
+            all pairs of graphs between target an features
+        """
+        self._method_calling = 3
+        # Check is fit had been called
+        check_is_fitted(self, ['X'])
+
+        # Input validation and parsing
+        if X is None:
+            raise ValueError('`transform` input cannot be None')
+        else:
+            Y = self.parse_input(X)
+
+        # Transform - calculate kernel matrix
+        km = self._calculate_kernel_matrix(Y=Y, kernel_function=kernel_function)
+        self._Y = Y
+
+        # Self transform must appear before the diagonal call on normilization
+        self._is_transformed = True
+        if self.normalize:
+            X_diag, Y_diag = self.diagonal()
+            km /= np.sqrt(np.outer(Y_diag, X_diag))
+        return km
 
     def parse_input(self, X):
         """Parse and check the given input for VH kernel.
@@ -142,8 +213,6 @@ class VertexHistogram(Kernel):
                 raise ValueError('parsed input is empty')
             return features
 
-
-
     def _calculate_kernel_matrix(self, kernel_function='linear', Y=None):
         """Calculate the kernel matrix given a target_graph and a kernel.
         Each a matrix is calculated between all elements of Y on the rows and
@@ -160,7 +229,7 @@ class VertexHistogram(Kernel):
             are the taken from self.X. Otherwise Y corresponds to targets
             and self.X to inputs.
         """
-        #print("Calculate KM VHK:", kernel_function)
+        print("Calculate KM VHK:", kernel_function)
         if kernel_function is 'linear':
             if Y is None:
                 #print("X:", self.X.shape)
