@@ -56,10 +56,10 @@ class kernel():
         if self.kernel_name == "WeisfeilerLehman":
             self.kernel = WeisfeilerLehman(base_graph_kernel=NonLinearKernel, *args, **kwargs)
             self.fitted_kernel = self.kernel.fit_transform(X, self.kernel_function)
-            #print("WL Fitted")
+            print("WL Fitted")
         else:
             self.fitted_kernel = self.kernel.fit_transform(X)
-            #print("WL Fitted NOP")
+            print("WL Fitted NOP")
     
     def transform_data(self, X):
         """
@@ -67,7 +67,7 @@ class kernel():
         """
         
         self.transformed_kernel = self.kernel.transform(X, self.kernel_function)
-        #print("WL Transformed")
+        print("WL Transformed")
     
     def calcualte_reduced_X(self, X):
         """
