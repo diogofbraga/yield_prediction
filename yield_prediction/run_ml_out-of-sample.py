@@ -80,7 +80,7 @@ def main():
         )
     
     info = defaultdict()
-    
+    '''
     info['quantum'] = defaultdict()
     info['quantum']['dir'] = 'quantum_descriptors'
     info['quantum']['X_type'] = 'quantum'
@@ -111,7 +111,7 @@ def main():
         rxn_components, reactions
         )
     info['one-hot']['kwargs'] = None
-    
+    '''
     graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles)
     wl_kernel_functions = ['linear', 'polynomial', 'sigmoid'] # 'rbf'
     for i in wl_kernel_functions:
@@ -130,7 +130,7 @@ def main():
                 ]
             info['graphs_WL{}_{}'.format(i, n)]['X'] = graphs
             info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'niter': int(n), 'kernel_function': i}
-
+    '''
     for fp, fp_type, fps_kw in zip(
             [
                 'FMorgan1_32', 'FMorgan1_64', 
@@ -231,7 +231,7 @@ def main():
                         rxn_components, reactions, rxn_smiles, fp_type, fps_kw,
                         return_raw=True,  return_concat=True, return_sum=False
                         )
-
+    '''
     dir_setup(
         descriptor_names=[info[k]['dir'] for k in info.keys()],
         test_types=['out_of_sample'],
