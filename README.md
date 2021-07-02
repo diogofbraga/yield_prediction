@@ -3,8 +3,8 @@ Prediction of reaction yields using support vector regression models built on st
 
 ## Dependencies
 * Python (3.6)
-* GraKel-dev (0.1a5)
-* RDKit (2017.09.1)
+* GraKel-dev (0.1.8)
+* RDKit (2021.03.3)
 * Matplotlib (3.3.2)
 * xlrd (1.2.0)
 * openpyxl (3.0.5)
@@ -12,6 +12,19 @@ Prediction of reaction yields using support vector regression models built on st
 * Numpy (1.19.1)
 * Scipy (1.5.2)
 * Pandas (1.1.1)
+
+### Environment creation
+* Using the yml file:
+```bash
+conda env create -f yield_prediction.yml
+```
+
+* Using the setup.py file (if conflicts arise):
+```bash
+conda create --name yield_prediction python=3.6 -y
+
+python setup.py install
+```
 
 # Instructions
 
