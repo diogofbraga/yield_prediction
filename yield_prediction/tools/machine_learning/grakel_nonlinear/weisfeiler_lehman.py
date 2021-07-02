@@ -11,8 +11,8 @@ from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
 
 from grakel.graph import Graph
-#from grakel.kernels import Kernel
-from tools.machine_learning.grakel_nonlinear.kernel import Kernel
+from grakel.kernels import Kernel
+#from tools.machine_learning.grakel_nonlinear.kernel import Kernel
 from tools.machine_learning.grakel_nonlinear.nonlinear_kernel import NonLinearKernel
 
 # Python 2/3 cross-compatibility import

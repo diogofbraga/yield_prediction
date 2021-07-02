@@ -44,8 +44,8 @@ class kernel():
         if 'kernel_function' in kwargs:
             self.kernel_function = kwargs.pop('kernel_function', None)
 
-        self.kernel = k(base_kernel=k_base, *args, **kwargs)
-        #self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)
+        #self.kernel = k(base_kernel=k_base, *args, **kwargs)
+        self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)
         
     def fit_and_transform(self, X, *args, **kwargs):
         """

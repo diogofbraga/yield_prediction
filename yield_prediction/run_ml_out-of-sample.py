@@ -129,7 +129,7 @@ def main():
                 'Gradient Boosting', 'Decision Tree'
                 ]
             info['graphs_WL{}_{}'.format(i, n)]['X'] = graphs
-            info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'niter': int(n), 'kernel_function': i}
+            info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'n_iter': int(n), 'kernel_function': i}
     '''
     for fp, fp_type, fps_kw in zip(
             [
