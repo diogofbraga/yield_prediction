@@ -229,12 +229,13 @@ class NonLinearKernel(Kernel):
             are the taken from self.X. Otherwise Y corresponds to targets
             and self.X to inputs.
         """
+        kernel_function = 'rbf'
         print("Calculate KM VHK:", kernel_function)
         if kernel_function is 'linear':
             if Y is None:
-                #print("X:", self.X.shape)
+                print("X:", self.X.shape)
                 K = self.X.dot(self.X.T)
-                #print("K:", K.shape)
+                print("K:", K.shape)
             else:
                 K = Y[:, :self.X.shape[1]].dot(self.X.T)
         elif kernel_function is 'polynomial':
@@ -242,47 +243,42 @@ class NonLinearKernel(Kernel):
             bias = 0
             degree = 2
             if Y is None:
-                #print("X:", self.X.shape)
+                print("X:", self.X.shape)
                 K = (scale * self.X.dot(self.X.T) + bias) ** degree
-                #print("K:", K.shape)
+                print("K:", K.shape)
             else:
                 K = (scale * Y[:, :self.X.shape[1]].dot(self.X.T) + bias) ** degree
         elif kernel_function is 'sigmoid':
             scale = 1
             bias = 0
             if Y is None:
-                #print("X:", self.X.shape)
+                print("X:", self.X.shape)
                 K = np.tanh(scale * self.X.dot(self.X.T) + bias)
-                #print("K:", K.shape)
+                print("K:", K.shape)
             else:
-                #print("X:", self.X.shape)
                 K = np.tanh(scale * Y[:, :self.X.shape[1]].dot(self.X.T) + bias)
-                #print("K:", K.shape)
         elif kernel_function is 'rbf':
             gamma = 1/self.X.shape[1]
             if Y is None:
-                #print("X:", self.X.shape)
-                #print("X:", self.X ** 2)
-                norms_X = (self.X ** 2).sum(axis=1)
-                #print("norms_X: ", norms_X)
-                #print("norms_X: ", norms_X.shape)
-                norms_Y = (self.X ** 2).sum(axis=1)
-                #print("norms_Y: ", norms_Y)
-                #print("norms_Y: ", norms_Y.shape)
+                print("X:", self.X.shape)
+                if type(self.X) is np.ndarray:
+                    norms_X = (self.X ** 2).sum(axis=1)
+                else:
+                    norms_X = (self.X.power(2)).sum(axis=1)
+                if type(self.X) is np.ndarray:
+                    norms_Y = (self.X ** 2).sum(axis=1)
+                else:
+                    norms_Y = (self.X.power(2)).sum(axis=1)
                 dists_sq = np.abs(norms_X.reshape(-1, 1) + norms_Y - 2 * np.dot(self.X, self.X.T))
-                #print("dists_sq: ", dists_sq)
-                #print("dists_sq: ", dists_sq.shape)
                 K = np.exp(-gamma * dists_sq)
-                #print("K:", K)
-                #print("K:", K.shape)
+                print("K:", K.shape)
             else:
                 pass
             
-
-        if self.sparse_:
-            return K.toarray()
-        else:
+        if type(K) is np.ndarray or type(K) is np.matrix:
             return K
+        else:
+            return K.toarray()
 
     def diagonal(self):
         """Calculate the kernel matrix diagonal of the fitted data.
