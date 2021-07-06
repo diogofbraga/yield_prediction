@@ -235,7 +235,7 @@ class WeisfeilerLehman(Kernel):
                 for (i, g) in enumerate(generate_graphs(label_count, WL_labels_inverse)):
                     base_graph_kernel[i].fit(g)
             elif self._method_calling == 2:
-                K = np.sum((base_graph_kernel[i].fit_transform(g, kernel_function) for (i, g) in
+                K = np.sum((base_graph_kernel[i].fit_transform(g) for (i, g) in
                            enumerate(generate_graphs(label_count, WL_labels_inverse))), axis=0)
 
         else:
@@ -246,6 +246,28 @@ class WeisfeilerLehman(Kernel):
                 K = np.sum(self._parallel(joblib.delayed(efit_transform)(base_graph_kernel[i], g)
                            for (i, g) in enumerate(generate_graphs(label_count, WL_labels_inverse))),
                            axis=0)
+
+        print("----- SUM -----")
+        print("Number of iterations:", self._n_iter)
+        print("Kernel function:", kernel_function)
+        if kernel_function is 'polynomial':
+            scale = 1
+            bias = 0
+            degree = 2
+            K = (scale * K.dot(K.T) + bias) ** degree
+            print("K:", K.shape)
+        elif kernel_function is 'sigmoid':
+            scale = 1
+            bias = 0
+            K = np.tanh(scale * K.dot(K.T) + bias)
+            print("K:", K.shape)
+        elif kernel_function is 'rbf':
+            gamma = 1/K.shape[1]
+            norms_X = (K ** 2).sum(axis=1)
+            norms_Y = (K ** 2).sum(axis=1)
+            dists_sq = np.abs(norms_X.reshape(-1, 1) + norms_Y - 2 * np.dot(K, K.T))
+            K = np.exp(-gamma * dists_sq)
+            print("K:", K.shape)
 
         if self._method_calling == 1:
             return base_graph_kernel

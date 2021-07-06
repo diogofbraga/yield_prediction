@@ -52,14 +52,23 @@ class kernel():
         Fit and transform on the same dataset. Calculates X_fit by X_fit 
         kernel matrix.
         """
+        print("--------", X[:2].name, "--------")
+        for index, value in X[:2].items():
+            print(f"--------- Index : {index}, Value : {value}")
+            print("labels:", value.get_labels())
+            print("adj matrix:", value.get_adjacency_matrix())
+            print("edge dict:", value.get_edge_dictionary())
 
         if self.kernel_name == "WeisfeilerLehman":
             self.kernel = WeisfeilerLehman(base_graph_kernel=NonLinearKernel, *args, **kwargs)
-            self.fitted_kernel = self.kernel.fit_transform(X, self.kernel_function)
+            self.fitted_kernel = self.kernel.fit_transform(X[:2], self.kernel_function)
             print("WL Fitted")
+
         else:
             self.fitted_kernel = self.kernel.fit_transform(X)
             print("WL Fitted NOP")
+
+        print("Fitted kernel\n", self.fitted_kernel)
     
     def transform_data(self, X):
         """
@@ -81,7 +90,7 @@ class kernel():
         # missing mols.
         for i, x in enumerate(X):
             if pd.isnull(x):
-                 missing_mol_indices.append(i)
+                missing_mol_indices.append(i)
             else:
                 present_mol_indices.append(i)
                 reduced_X.append(x)
@@ -112,8 +121,11 @@ class kernel():
 
         """
         self.define_kernel(normalize=True, **kernel_params)
+
+        if 'kernel_function' in kernel_params:
+            kernel_params.pop('kernel_function', None)
         
-        self.fit_and_transform(X_train)
+        self.fit_and_transform(X_train, **kernel_params)
         if X_test is not None:
             self.transform_data(X_test)
     

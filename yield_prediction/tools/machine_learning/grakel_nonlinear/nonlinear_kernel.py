@@ -57,7 +57,7 @@ class NonLinearKernel(Kernel):
                 TypeError('sparse could be False, True or auto')
             self._initialized["sparse"] = True
 
-    def fit_transform(self, X, kernel_function):
+    def fit_transform(self, X):
         """Fit and transform, on the same dataset.
         Parameters
         ----------
@@ -81,7 +81,7 @@ class NonLinearKernel(Kernel):
         self.fit(X)
 
         # Transform - calculate kernel matrix
-        km = self._calculate_kernel_matrix(kernel_function=kernel_function)
+        km = self._calculate_kernel_matrix()
 
         self._X_diag = np.diagonal(km)
         if self.normalize:
@@ -89,7 +89,7 @@ class NonLinearKernel(Kernel):
         else:
             return km
 
-    def transform(self, X, kernel_function):
+    def transform(self, X):
         """Calculate the kernel matrix, between given and fitted dataset.
         Parameters
         ----------
@@ -117,7 +117,7 @@ class NonLinearKernel(Kernel):
             Y = self.parse_input(X)
 
         # Transform - calculate kernel matrix
-        km = self._calculate_kernel_matrix(Y=Y, kernel_function=kernel_function)
+        km = self._calculate_kernel_matrix(Y)
         self._Y = Y
 
         # Self transform must appear before the diagonal call on normilization
@@ -213,7 +213,7 @@ class NonLinearKernel(Kernel):
                 raise ValueError('parsed input is empty')
             return features
 
-    def _calculate_kernel_matrix(self, kernel_function='linear', Y=None):
+    def _calculate_kernel_matrix(self, Y=None):
         """Calculate the kernel matrix given a target_graph and a kernel.
         Each a matrix is calculated between all elements of Y on the rows and
         all elements of X on the columns.
@@ -229,7 +229,13 @@ class NonLinearKernel(Kernel):
             are the taken from self.X. Otherwise Y corresponds to targets
             and self.X to inputs.
         """
-        kernel_function = 'rbf'
+
+        if Y is None:
+            K = self.X.dot(self.X.T)
+        else:
+            K = Y[:, :self.X.shape[1]].dot(self.X.T)
+
+        '''
         print("Calculate KM VHK:", kernel_function)
         if kernel_function is 'linear':
             if Y is None:
@@ -274,11 +280,12 @@ class NonLinearKernel(Kernel):
                 print("K:", K.shape)
             else:
                 pass
+        '''
             
-        if type(K) is np.ndarray or type(K) is np.matrix:
-            return K
-        else:
+        if self.sparse_:
             return K.toarray()
+        else:
+            return K
 
     def diagonal(self):
         """Calculate the kernel matrix diagonal of the fitted data.

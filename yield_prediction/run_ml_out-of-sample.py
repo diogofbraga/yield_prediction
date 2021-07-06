@@ -113,7 +113,7 @@ def main():
     info['one-hot']['kwargs'] = None
     '''
     graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles)
-    wl_kernel_functions = ['linear', 'polynomial', 'sigmoid'] # 'rbf'
+    wl_kernel_functions = ['polynomial', 'sigmoid', 'rbf']
     for i in wl_kernel_functions:
         for n in np.arange(2, 11):
             #print("wl_kernel_functions", i, n)
@@ -121,12 +121,7 @@ def main():
             info['graphs_WL{}_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)
             info['graphs_WL{}_{}'.format(i, n)]['X_type'] = 'graphs'
             info['graphs_WL{}_{}'.format(i, n)]['model_names'] = [
-                'SVR - Precomputed Kernel', 
-                'SVR - Linear Kernel', 'SVR - Poly Kernel', 'SVR - RBF Kernel',
-                'SVR - Sigmoid Kernel', 'Random Forest',
-                'Linear Regression', 'k-Nearest Neighbours', 
-                'Bayes Generalised Linear Model',
-                'Gradient Boosting', 'Decision Tree'
+                'SVR - Precomputed Kernel'
                 ]
             info['graphs_WL{}_{}'.format(i, n)]['X'] = graphs
             info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'n_iter': int(n), 'kernel_function': i}
