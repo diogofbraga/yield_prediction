@@ -14,7 +14,7 @@ Prediction of reaction yields using support vector regression models built on st
 * Pandas (1.1.1)
 
 ### Environment creation
-* Using the yml file:
+* Using the yml file (Linux):
 ```bash
 conda env create -f yield_prediction.yml
 ```
