@@ -26,7 +26,7 @@ from six import iteritems
 from six import itervalues
 
 
-class NonLinearKernel(Kernel):
+class VertexHistogram(Kernel):
     """
     Parameters
     ----------
@@ -42,7 +42,7 @@ class NonLinearKernel(Kernel):
 
     def __init__(self, n_jobs=None, normalize=False, verbose=False, sparse='auto'):
         """Initialise a non linear kernel."""
-        super(NonLinearKernel, self).__init__(n_jobs=n_jobs, normalize=normalize, verbose=verbose)
+        super(VertexHistogram, self).__init__(n_jobs=n_jobs, normalize=normalize, verbose=verbose)
         self.sparse = sparse
         self._initialized.update({'sparse': True})
 
@@ -50,7 +50,7 @@ class NonLinearKernel(Kernel):
         """Initialize all transformer arguments, needing initialization."""
         if not self._initialized["n_jobs"]:
             if self.n_jobs is not None:
-                warn('no implemented parallelization for NonLinearKernel')
+                warn('no implemented parallelization for VertexHistogram')
             self._initialized["n_jobs"] = True
         if not self._initialized["sparse"]:
             if self.sparse not in ['auto', False, True]:
@@ -77,7 +77,10 @@ class NonLinearKernel(Kernel):
             corresponding to the kernel matrix, a calculation between
             all pairs of graphs between target an features
         """
+        ##print("--------- WL ---------")
+        ##print("Graph WL: \n", X)
         self._method_calling = 2
+        ##print("--------- VHK ---------")
         self.fit(X)
 
         # Transform - calculate kernel matrix
@@ -85,8 +88,10 @@ class NonLinearKernel(Kernel):
 
         self._X_diag = np.diagonal(km)
         if self.normalize:
+            ##print("KM (dot product of features) with normalization: \n", km)
             return km / np.sqrt(np.outer(self._X_diag, self._X_diag))
         else:
+            ##print("KM (dot product of features) without normalization: \n", km)
             return km
 
     def transform(self, X):
@@ -211,6 +216,7 @@ class NonLinearKernel(Kernel):
 
             if ni == 0:
                 raise ValueError('parsed input is empty')
+            ##print("Features: \n", features)
             return features
 
     def _calculate_kernel_matrix(self, Y=None):
@@ -234,6 +240,11 @@ class NonLinearKernel(Kernel):
             K = self.X.dot(self.X.T)
         else:
             K = Y[:, :self.X.shape[1]].dot(self.X.T)
+
+        if self.sparse_:
+            return K.toarray()
+        else:
+            return K
 
         '''
         print("Calculate KM VHK:", kernel_function)
@@ -281,11 +292,6 @@ class NonLinearKernel(Kernel):
             else:
                 pass
         '''
-            
-        if self.sparse_:
-            return K.toarray()
-        else:
-            return K
 
     def diagonal(self):
         """Calculate the kernel matrix diagonal of the fitted data.

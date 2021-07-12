@@ -9,7 +9,7 @@ import numpy as np
 import grakel.kernels as kernels
 import sklearn.metrics.pairwise as sklearn_kernels
 
-from tools.machine_learning.grakel_nonlinear.nonlinear_kernel import NonLinearKernel
+from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
 from tools.machine_learning.grakel_nonlinear.weisfeiler_lehman import WeisfeilerLehman
 
 class kernel():
@@ -52,31 +52,35 @@ class kernel():
         Fit and transform on the same dataset. Calculates X_fit by X_fit 
         kernel matrix.
         """
-        print("--------", X[:2].name, "--------")
-        for index, value in X[:2].items():
-            print(f"--------- Index : {index}, Value : {value}")
-            print("labels:", value.get_labels())
-            print("adj matrix:", value.get_adjacency_matrix())
-            print("edge dict:", value.get_edge_dictionary())
+        indices = [179,365]
+        #print("--------", X.name, "--------")
+        #for index, value in X.items():
+        #    print(f"--------- Index : {index}, Value : {value}")
+        #    print("adj matrix:\n", value.get_adjacency_matrix())
+        #    print("edge dict:", value.get_edge_dictionary())
+        #    print("labels:", value.get_labels())
 
         if self.kernel_name == "WeisfeilerLehman":
-            self.kernel = WeisfeilerLehman(base_graph_kernel=NonLinearKernel, *args, **kwargs)
-            self.fitted_kernel = self.kernel.fit_transform(X[:2], self.kernel_function)
-            print("WL Fitted")
+            print("-------- WL Fit --------")
+            self.kernel = WeisfeilerLehman(base_graph_kernel=VertexHistogram, *args, **kwargs)
+            self.fitted_kernel = self.kernel.fit_transform(X, self.kernel_function)
+            print("Fitted non-linear kernel: \n", self.fitted_kernel)
+            print("-------- WL Fitted --------")
 
         else:
-            self.fitted_kernel = self.kernel.fit_transform(X)
+            self.fitted_kernel = self.kernel.fit_transform()
             print("WL Fitted NOP")
 
-        print("Fitted kernel\n", self.fitted_kernel)
     
     def transform_data(self, X):
         """
         Calculates X_fit by X_transform kernel matrix.
         """
-        
+        indices = [179,365]
+        print("-------- WL Transform --------")
         self.transformed_kernel = self.kernel.transform(X, self.kernel_function)
-        print("WL Transformed")
+        print("Transformed non-linear kernel: \n", self.transformed_kernel)
+        print("-------- WL Transformed --------")
     
     def calcualte_reduced_X(self, X):
         """

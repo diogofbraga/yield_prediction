@@ -50,7 +50,7 @@ def save_fig_to_excel(excel_file, sheet_name, image_file, text=None):
     wb.save(excel_file)
 
 
-n_jobs=32
+n_jobs=1 #32
 class machine_learning():
     
     def __init__(self, X=None, y=None, models=None, param_grid=None,

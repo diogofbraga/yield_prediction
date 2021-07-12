@@ -13,7 +13,8 @@ from sklearn.utils.validation import check_is_fitted
 from grakel.graph import Graph
 from grakel.kernels import Kernel
 #from tools.machine_learning.grakel_nonlinear.kernel import Kernel
-from tools.machine_learning.grakel_nonlinear.nonlinear_kernel import NonLinearKernel
+from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
+import csv # Added by diogofbraga
 
 # Python 2/3 cross-compatibility import
 from six import iteritems
@@ -32,7 +33,7 @@ class WeisfeilerLehman(Kernel):
         dictionary of parameters. General parameters concerning
         normalization, concurrency, .. will be ignored, and the
         ones of given on `__init__` will be passed in case it is needed.
-        Default `base_graph_kernel` is `NonLinearKernel`.
+        Default `base_graph_kernel` is `VertexHistogram`.
     Attributes
     ----------
     X : dict
@@ -50,7 +51,7 @@ class WeisfeilerLehman(Kernel):
     _graph_format = "dictionary"
 
     def __init__(self, n_jobs=None, verbose=False,
-                 normalize=False, n_iter=5, base_graph_kernel=NonLinearKernel):
+                 normalize=False, n_iter=5, base_graph_kernel=VertexHistogram):
         """Initialise a `weisfeiler_lehman` kernel."""
         super(WeisfeilerLehman, self).__init__(
             n_jobs=n_jobs, verbose=verbose, normalize=normalize)
@@ -66,7 +67,7 @@ class WeisfeilerLehman(Kernel):
         if not self._initialized["base_graph_kernel"]:
             base_graph_kernel = self.base_graph_kernel
             if base_graph_kernel is None:
-                base_graph_kernel, params = NonLinearKernel, dict()
+                base_graph_kernel, params = VertexHistogram, dict()
             elif type(base_graph_kernel) is type and issubclass(base_graph_kernel, Kernel):
                 params = dict()
             else:
@@ -101,7 +102,7 @@ class WeisfeilerLehman(Kernel):
             self._n_iter = self.n_iter + 1
             self._initialized["n_iter"] = True
 
-    def parse_input(self, X, kernel_function):
+    def parse_input(self, X):
         """Parse input for weisfeiler lehman.
         Parameters
         ----------
@@ -229,6 +230,7 @@ class WeisfeilerLehman(Kernel):
                 self._inv_labels[i] = WL_labels_inverse
                 yield new_graphs
 
+        print("----- NUMBER OF ITERATIONS -----:", self._n_iter)
         base_graph_kernel = {i: self._base_graph_kernel(**self._params) for i in range(self._n_iter)}
         if self._parallel is None:
             if self._method_calling == 1:
@@ -247,32 +249,48 @@ class WeisfeilerLehman(Kernel):
                            for (i, g) in enumerate(generate_graphs(label_count, WL_labels_inverse))),
                            axis=0)
 
+        if self._method_calling == 1:
+            return base_graph_kernel
+        elif self._method_calling == 2:
+            return K, base_graph_kernel
+
+
+    def non_linearity(self, K, kernel_function):
+
         print("----- SUM -----")
-        print("Number of iterations:", self._n_iter)
+        print("Kernel matrix before non-linearity: \n", K)
+        #kernel_function = 'polynomial'
         print("Kernel function:", kernel_function)
         if kernel_function is 'polynomial':
             scale = 1
             bias = 0
             degree = 2
             K = (scale * K.dot(K.T) + bias) ** degree
-            print("K:", K.shape)
         elif kernel_function is 'sigmoid':
             scale = 1
             bias = 0
             K = np.tanh(scale * K.dot(K.T) + bias)
-            print("K:", K.shape)
         elif kernel_function is 'rbf':
             gamma = 1/K.shape[1]
-            norms_X = (K ** 2).sum(axis=1)
-            norms_Y = (K ** 2).sum(axis=1)
-            dists_sq = np.abs(norms_X.reshape(-1, 1) + norms_Y - 2 * np.dot(K, K.T))
-            K = np.exp(-gamma * dists_sq)
-            print("K:", K.shape)
 
-        if self._method_calling == 1:
-            return base_graph_kernel
-        elif self._method_calling == 2:
-            return K, base_graph_kernel
+            D = np.zeros(K.shape)
+            ##print(D)
+            print("D shape", D.shape)
+            print("K shape", K.shape)
+            ##print(len(K))
+            for row in range(len(K)): # rows
+                if row >= K.shape[1]: # rows compared with columns
+                    continue
+                for column in range(len(K[row])): # columns compared with rows
+                    if column >= K.shape[0]:
+                        continue
+                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
+            ##print("D: \n", D)
+
+            K = np.exp(-gamma * (np.abs(D)) ** 2)
+
+        return K
+
 
     def fit_transform(self, X, kernel_function, y=None):
         """Fit and transform, on the same dataset.
@@ -299,7 +317,10 @@ class WeisfeilerLehman(Kernel):
         if X is None:
             raise ValueError('transform input cannot be None')
         else:
-            km, self.X = self.parse_input(X, kernel_function)
+            print("X", X)
+            km, self.X = self.parse_input(X)
+
+        km = self.non_linearity(km, kernel_function)
 
         self._X_diag = np.diagonal(km)
         if self.normalize:
@@ -424,13 +445,15 @@ class WeisfeilerLehman(Kernel):
 
         if self._parallel is None:
             # Calculate the kernel matrix without parallelization
-            K = np.sum((self.X[i].transform(g, kernel_function) for (i, g)
+            K = np.sum((self.X[i].transform(g) for (i, g)
                        in enumerate(generate_graphs(WL_labels_inverse, nl))), axis=0)
 
         else:
             # Calculate the kernel marix with parallelization
             K = np.sum(self._parallel(joblib.delayed(etransform)(self.X[i], g) for (i, g)
                        in enumerate(generate_graphs(WL_labels_inverse, nl))), axis=0)
+
+        #K = self.non_linearity(K, kernel_function)
 
         self._is_transformed = True
         if self.normalize:
