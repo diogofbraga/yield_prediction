@@ -10,7 +10,6 @@ from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
 
 from grakel.kernels import Kernel
-#from tools.machine_learning.grakel_nonlinear.kernel import Kernel
 from grakel.graph import Graph
 
 from numpy import zeros

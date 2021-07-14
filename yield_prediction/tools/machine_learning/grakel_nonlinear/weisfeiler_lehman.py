@@ -12,8 +12,8 @@ from sklearn.utils.validation import check_is_fitted
 
 from grakel.graph import Graph
 from grakel.kernels import Kernel
-#from tools.machine_learning.grakel_nonlinear.kernel import Kernel
-from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
+#from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
+from grakel.kernels.vertex_histogram import VertexHistogram
 
 # Python 2/3 cross-compatibility import
 from six import iteritems
@@ -260,7 +260,6 @@ class WeisfeilerLehman(Kernel):
         print("Kernel matrix before non-linearity: \n", K)
         #kernel_function = 'polynomial'
         print("Kernel function:", kernel_function)
-        print(type(K))
         if kernel_function is 'polynomial':
             scale = 1
             bias = 0

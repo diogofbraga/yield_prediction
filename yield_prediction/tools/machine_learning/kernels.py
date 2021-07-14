@@ -10,8 +10,9 @@ import csv # Added by diogofbraga
 import grakel.kernels as kernels
 import sklearn.metrics.pairwise as sklearn_kernels
 
-from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
+#from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
 from tools.machine_learning.grakel_nonlinear.weisfeiler_lehman import WeisfeilerLehman
+from grakel.kernels.vertex_histogram import VertexHistogram
 
 class kernel():
     """A class that defines and calculates kernels using GraKel."""
@@ -45,17 +46,23 @@ class kernel():
         if 'kernel_function' in kwargs:
             self.kernel_function = kwargs.pop('kernel_function', None)
 
-        #self.kernel = k(base_kernel=k_base, *args, **kwargs)
-        self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)
+        if self.kernel_name == "WeisfeilerLehman":
+            self.kernel = WeisfeilerLehman(base_graph_kernel=VertexHistogram, *args, **kwargs)
+        else:
+            #self.kernel = k(base_kernel=k_base, *args, **kwargs)
+            self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)  
+
+
+
         
-    def fit_and_transform(self, X, *args, **kwargs):
+    def fit_and_transform(self, X):
         """
         Fit and transform on the same dataset. Calculates X_fit by X_fit 
         kernel matrix.
         """
         indices = [179,365]
-        #print("--------", X.name, "--------")
-        #for index, value in X.items():
+        #print("--------", X[indices].name, "--------")
+        #for index, value in X[indices].items():
         #    print(f"--------- Index : {index}, Value : {value}")
         #    print("adj matrix:\n", value.get_adjacency_matrix())
         #    print("edge dict:", value.get_edge_dictionary())
@@ -63,7 +70,6 @@ class kernel():
 
         if self.kernel_name == "WeisfeilerLehman":
             print("-------- WL Fit --------")
-            self.kernel = WeisfeilerLehman(base_graph_kernel=VertexHistogram, *args, **kwargs)
             self.fitted_kernel = self.kernel.fit_transform(X, self.kernel_function)
             print("Fitted non-linear kernel: \n", self.fitted_kernel)
             print("Fitted non-linear kernel shape: \n", self.fitted_kernel.shape)
@@ -74,8 +80,8 @@ class kernel():
             print("-------- WL Fitted --------")
 
         else:
-            self.fitted_kernel = self.kernel.fit_transform()
-            print("WL Fitted NOP")
+            self.fitted_kernel = self.kernel.fit_transform(X)
+            print("Fitted linear kernel: \n", self.fitted_kernel)
 
     
     def transform_data(self, X):
@@ -83,11 +89,15 @@ class kernel():
         Calculates X_fit by X_transform kernel matrix.
         """
         indices = [179,365]
-        print("-------- WL Transform --------")
-        self.transformed_kernel = self.kernel.transform(X, self.kernel_function)
-        print("Transformed non-linear kernel: \n", self.transformed_kernel)
-        print("Transformed non-linear kernel shape: \n", self.transformed_kernel.shape)
-        print("-------- WL Transformed --------")
+        if self.kernel_name == "WeisfeilerLehman":
+            print("-------- WL Transform --------")
+            self.transformed_kernel = self.kernel.transform(X, self.kernel_function)
+            print("Transformed non-linear kernel: \n", self.transformed_kernel)
+            print("Transformed non-linear kernel shape: \n", self.transformed_kernel.shape)
+            print("-------- WL Transformed --------")
+        else:
+            self.transformed_kernel = self.kernel.transform(X)
+            print("Transformed linear kernel: \n", self.transformed_kernel)
     
     def calcualte_reduced_X(self, X):
         """
@@ -132,11 +142,8 @@ class kernel():
 
         """
         self.define_kernel(normalize=True, **kernel_params)
-
-        if 'kernel_function' in kernel_params:
-            kernel_params.pop('kernel_function', None)
         
-        self.fit_and_transform(X_train, **kernel_params)
+        self.fit_and_transform(X_train)
         if X_test is not None:
             self.transform_data(X_test)
     
