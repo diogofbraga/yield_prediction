@@ -5,6 +5,7 @@ Kernel modules.
 """
 import pandas as pd
 import numpy as np
+import csv # Added by diogofbraga
 
 import grakel.kernels as kernels
 import sklearn.metrics.pairwise as sklearn_kernels
@@ -65,6 +66,11 @@ class kernel():
             self.kernel = WeisfeilerLehman(base_graph_kernel=VertexHistogram, *args, **kwargs)
             self.fitted_kernel = self.kernel.fit_transform(X, self.kernel_function)
             print("Fitted non-linear kernel: \n", self.fitted_kernel)
+            print("Fitted non-linear kernel shape: \n", self.fitted_kernel.shape)
+            #with open('fitted_kernel.csv', 'w') as f:
+            #    write = csv.writer(f)
+            #    write.writerow(self.kernel_function)
+            #    write.writerows(self.fitted_kernel)
             print("-------- WL Fitted --------")
 
         else:
@@ -80,6 +86,7 @@ class kernel():
         print("-------- WL Transform --------")
         self.transformed_kernel = self.kernel.transform(X, self.kernel_function)
         print("Transformed non-linear kernel: \n", self.transformed_kernel)
+        print("Transformed non-linear kernel shape: \n", self.transformed_kernel.shape)
         print("-------- WL Transformed --------")
     
     def calcualte_reduced_X(self, X):

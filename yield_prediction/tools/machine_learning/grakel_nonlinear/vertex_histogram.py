@@ -216,7 +216,7 @@ class VertexHistogram(Kernel):
 
             if ni == 0:
                 raise ValueError('parsed input is empty')
-            ##print("Features: \n", features)
+            #print("Features: \n", features)
             return features
 
     def _calculate_kernel_matrix(self, Y=None):

@@ -14,7 +14,6 @@ from grakel.graph import Graph
 from grakel.kernels import Kernel
 #from tools.machine_learning.grakel_nonlinear.kernel import Kernel
 from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
-import csv # Added by diogofbraga
 
 # Python 2/3 cross-compatibility import
 from six import iteritems
@@ -261,15 +260,19 @@ class WeisfeilerLehman(Kernel):
         print("Kernel matrix before non-linearity: \n", K)
         #kernel_function = 'polynomial'
         print("Kernel function:", kernel_function)
+        print(type(K))
         if kernel_function is 'polynomial':
             scale = 1
             bias = 0
             degree = 2
-            K = (scale * K.dot(K.T) + bias) ** degree
-        elif kernel_function is 'sigmoid':
+            K = (scale * K + bias) ** degree
+        elif kernel_function is 'sigmoid-logistic':
+            K = 1 / (1 + np.exp(-K))
+        elif kernel_function is 'sigmoid-tangent':
             scale = 1
             bias = 0
-            K = np.tanh(scale * K.dot(K.T) + bias)
+            #K = np.tanh(scale * K.dot(K.T) + bias)
+            K = np.tan(scale * K + bias)
         elif kernel_function is 'rbf':
             gamma = 1/K.shape[1]
 
@@ -317,7 +320,7 @@ class WeisfeilerLehman(Kernel):
         if X is None:
             raise ValueError('transform input cannot be None')
         else:
-            print("X", X)
+            #print("X", X)
             km, self.X = self.parse_input(X)
 
         km = self.non_linearity(km, kernel_function)
@@ -453,7 +456,7 @@ class WeisfeilerLehman(Kernel):
             K = np.sum(self._parallel(joblib.delayed(etransform)(self.X[i], g) for (i, g)
                        in enumerate(generate_graphs(WL_labels_inverse, nl))), axis=0)
 
-        #K = self.non_linearity(K, kernel_function)
+        K = self.non_linearity(K, kernel_function)
 
         self._is_transformed = True
         if self.normalize:
