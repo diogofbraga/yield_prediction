@@ -113,7 +113,7 @@ def main():
     info['one-hot']['kwargs'] = None
     '''
     graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles)
-    wl_kernel_functions = ['polynomial'] # 'polynomial', 'sigmoid', 'sigmoid-logistic', 'sigmoid-tangent', 'rbf'
+    wl_kernel_functions = ['polynomial'] # 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
     for i in wl_kernel_functions:
         for n in np.arange(2, 11):
             #print("wl_kernel_functions", i, n)

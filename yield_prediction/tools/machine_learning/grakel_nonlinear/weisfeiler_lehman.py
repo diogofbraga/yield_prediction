@@ -98,7 +98,7 @@ class WeisfeilerLehman(Kernel):
         if not self._initialized["n_iter"]:
             if type(self.n_iter) is not int or self.n_iter <= 0:
                 raise TypeError("'n_iter' must be a positive integer")
-            self._n_iter = self.n_iter + 1
+            self._n_iter = self.n_iter # + 1 removed
             self._initialized["n_iter"] = True
 
     def parse_input(self, X):
@@ -265,20 +265,56 @@ class WeisfeilerLehman(Kernel):
             bias = 0
             degree = 2
             K = (scale * K + bias) ** degree
-        elif kernel_function is 'sigmoid-logistic':
-            K = 1 / (1 + np.exp(-K))
-        elif kernel_function is 'sigmoid-tangent':
+
+        elif kernel_function is 'sigmoidlogistic':
+            K = 1 / (1 + np.exp(-K)) # The matrix values are too small, with 1 we lose the differences
+
+        elif kernel_function is 'sigmoidhyperbolictangent':
             scale = 1
             bias = 0
-            #K = np.tanh(scale * K.dot(K.T) + bias)
-            K = np.tan(scale * K + bias)
+            K = np.tanh(scale * K + bias) # Return a matrix with only 1s
+            #K = np.tan(scale * K + bias) # It doesn't seem to work with the normalize = True
+            #K = np.arctan(scale * K + bias) # It doesn't seem to work with the normalize = True
+
+        elif kernel_function is 'gaussian':
+
+            D = np.zeros(K.shape)
+            for row in range(len(K)): # rows
+                if row >= K.shape[1]: # rows compared with columns
+                    continue
+                for column in range(len(K[row])): # columns compared with rows
+                    if column >= K.shape[0]:
+                        continue
+                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
+
+            sigma = float(1/K.shape[1])
+            variance = np.power(sigma,2)
+
+            K = np.exp(-((np.abs(D)) ** 2)/(2*variance))
+
+        elif kernel_function is 'exponential':
+
+            D = np.zeros(K.shape)
+            for row in range(len(K)): # rows
+                if row >= K.shape[1]: # rows compared with columns
+                    continue
+                for column in range(len(K[row])): # columns compared with rows
+                    if column >= K.shape[0]:
+                        continue
+                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
+
+            sigma = float(1/K.shape[1])
+            variance = np.power(sigma,2)
+
+            K = np.exp(-(np.abs(D))/(2*variance))
+
         elif kernel_function is 'rbf':
-            gamma = 1/K.shape[1]
+            gamma = float(1/K.shape[1])
 
             D = np.zeros(K.shape)
             ##print(D)
-            print("D shape", D.shape)
-            print("K shape", K.shape)
+            ##print("D shape", D.shape)
+            ##print("K shape", K.shape)
             ##print(len(K))
             for row in range(len(K)): # rows
                 if row >= K.shape[1]: # rows compared with columns
@@ -291,6 +327,114 @@ class WeisfeilerLehman(Kernel):
 
             K = np.exp(-gamma * (np.abs(D)) ** 2)
 
+        elif kernel_function is 'laplacian':
+
+            D = np.zeros(K.shape)
+            for row in range(len(K)): # rows
+                if row >= K.shape[1]: # rows compared with columns
+                    continue
+                for column in range(len(K[row])): # columns compared with rows
+                    if column >= K.shape[0]:
+                        continue
+                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
+
+            standard_deviation = float(1/K.shape[1])
+
+            K = np.exp(-(np.abs(D))/standard_deviation)
+        
+        elif kernel_function is 'rationalquadratic':
+
+            D = np.zeros(K.shape)
+            for row in range(len(K)): # rows
+                if row >= K.shape[1]: # rows compared with columns
+                    continue
+                for column in range(len(K[row])): # columns compared with rows
+                    if column >= K.shape[0]:
+                        continue
+                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
+
+            bias = 0
+
+            K = 1 - (((np.abs(D)) ** 2)/((np.abs(D)) ** 2) + bias)
+
+        elif kernel_function is 'multiquadratic':
+
+            D = np.zeros(K.shape)
+            for row in range(len(K)): # rows
+                if row >= K.shape[1]: # rows compared with columns
+                    continue
+                for column in range(len(K[row])): # columns compared with rows
+                    if column >= K.shape[0]:
+                        continue
+                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
+
+            bias = 1
+
+            K = np.sqrt(((np.abs(D)) ** 2) + np.power(bias,2))
+
+        elif kernel_function is 'inversemultiquadratic':
+
+            D = np.zeros(K.shape)
+            for row in range(len(K)): # rows
+                if row >= K.shape[1]: # rows compared with columns
+                    continue
+                for column in range(len(K[row])): # columns compared with rows
+                    if column >= K.shape[0]:
+                        continue
+                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
+
+            bias = 1
+
+            K = 1 / np.sqrt(((np.abs(D)) ** 2) + np.power(bias,2))
+
+        elif kernel_function is 'power':
+
+            D = np.zeros(K.shape)
+            for row in range(len(K)): # rows
+                if row >= K.shape[1]: # rows compared with columns
+                    continue
+                for column in range(len(K[row])): # columns compared with rows
+                    if column >= K.shape[0]:
+                        continue
+                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
+
+            degree = 2
+
+            K = -(np.abs(D) ** degree)
+
+        elif kernel_function is 'log':
+
+            D = np.zeros(K.shape)
+            for row in range(len(K)): # rows
+                if row >= K.shape[1]: # rows compared with columns
+                    continue
+                for column in range(len(K[row])): # columns compared with rows
+                    if column >= K.shape[0]:
+                        continue
+                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
+
+            degree = 2
+
+            K = -np.log((np.abs(D) ** degree) + 1)
+
+        elif kernel_function is 'cauchy':
+
+            D = np.zeros(K.shape)
+            for row in range(len(K)): # rows
+                if row >= K.shape[1]: # rows compared with columns
+                    continue
+                for column in range(len(K[row])): # columns compared with rows
+                    if column >= K.shape[0]:
+                        continue
+                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
+
+            sigma = float(1/K.shape[1])
+            variance = np.power(sigma,2)
+
+            K = 1 / (1 + ((np.abs(D)) ** 2)/variance)
+            
+
+        print("Kernel matrix after non-linearity: \n", K)
         return K
 
 
@@ -327,7 +471,7 @@ class WeisfeilerLehman(Kernel):
         self._X_diag = np.diagonal(km)
         if self.normalize:
             old_settings = np.seterr(divide='ignore')
-            km = np.nan_to_num(np.divide(km, np.sqrt(np.outer(self._X_diag, self._X_diag))))
+            km = np.nan_to_num(np.divide(km, np.sqrt(np.outer(self._X_diag, self._X_diag)))) # abs() added by diogofbraga
             np.seterr(**old_settings)
         return km
 
@@ -455,7 +599,7 @@ class WeisfeilerLehman(Kernel):
             K = np.sum(self._parallel(joblib.delayed(etransform)(self.X[i], g) for (i, g)
                        in enumerate(generate_graphs(WL_labels_inverse, nl))), axis=0)
 
-        K = self.non_linearity(K, kernel_function)
+        #K = self.non_linearity(K, kernel_function)
 
         self._is_transformed = True
         if self.normalize:

@@ -192,7 +192,8 @@ def get_fp_bit_length_results(scores_mean, metric):
     fps_bit_length['Mean'] = fps_bit_length.mean(axis='columns')
     
     return fps_bit_length
-                        
+
+'''                    
 fps =  [
         'Morgan1_32', 'Morgan1_64', 'Morgan1_128', 'Morgan1_256', 
             'Morgan1_512', 'Morgan1_1024', 'Morgan1_2048',
@@ -210,15 +211,16 @@ fps =  [
             'RDK_512', 'RDK_1024', 'RDK_2048',
         'MACCS', 
         ]
-                        
+'''      
+
 dirs = defaultdict()
-dirs['quantum'] = 'quantum_descriptors'
-dirs['quantum_noI'] = 'quantum_descriptors_noI'
-dirs['one-hot'] = 'one_hot_encodings'
+#dirs['quantum'] = 'quantum_descriptors'
+#dirs['quantum_noI'] = 'quantum_descriptors_noI'
+#dirs['one-hot'] = 'one_hot_encodings'
 dirs['graphs'] = 'graph_descriptors'
-for fp in fps:
-    dirs['{}_raw'.format(fp)] = 'fp_descriptors/{}/raw'.format(fp)
-    dirs['{}_concat'.format(fp)] = 'fp_descriptors/{}/concat'.format(fp)
+#for fp in fps:
+#    dirs['{}_raw'.format(fp)] = 'fp_descriptors/{}/raw'.format(fp)
+#    dirs['{}_concat'.format(fp)] = 'fp_descriptors/{}/concat'.format(fp)
 
 descriptor_names=[dirs[k] for k in dirs.keys()]
 test_types=['out_of_sample']
@@ -271,7 +273,7 @@ for test_type in scores.keys():
             results.to_excel(writer, sheet_name='{}_mean'.format(test_name))
         writer.save()
 
-
+'''
 fps_bit_length_results = defaultdict()
 fps_bit_length_results['Additive Mean R2'] = get_fp_bit_length_results(
     scores_mean['additive'], 
@@ -294,8 +296,10 @@ writer = pd.ExcelWriter('results/fp_bit_length_results.xlsx', engine='xlsxwriter
 for name, results in fps_bit_length_results.items():
     results.to_excel(writer, sheet_name=name)
 writer.save()
+'''
  
 
+'''
 descriptor_names=[
     'quantum_descriptors', 
     'fp_descriptors/Morgan1_1024/raw', 'fp_descriptors/Morgan1_1024/concat',
@@ -304,6 +308,11 @@ descriptor_names=[
     'fp_descriptors/MACCS/raw', 'fp_descriptors/MACCS/concat',
     'fp_descriptors/RDK_1024/raw', 'fp_descriptors/RDK_1024/concat',
     'graph_descriptors', 'one_hot_encodings'
+    ]
+'''
+
+descriptor_names=[
+    'graph_descriptors'
     ]
 
 test_types=['out_of_sample']
@@ -402,7 +411,7 @@ for test_type in scores.keys():
             results.to_excel(writer, sheet_name=test_name)
         writer.save()
 
-                
+'''       
 descriptor_names=[
     'quantum_descriptors_missing_additive', 
     'fp_descriptors/Morgan1_1024/raw', 'fp_descriptors/Morgan1_1024/concat',
@@ -484,3 +493,4 @@ for test_type in test_types:
         for descriptor, results in y_pred_to_save[test_name].items():
             results.to_excel(writer, sheet_name=descriptor, merge_cells=False)
         writer.save()
+'''         
