@@ -1,4 +1,4 @@
-name: env_yield_prediction
+name: yield_prediction
 channels:
   - conda-forge
   - defaults
@@ -52,7 +52,7 @@ dependencies:
   - pixman=0.40.0=h36c2ea0_0
   - pthread-stubs=0.4=h36c2ea0_1001
   - pycairo=1.20.1=py36h726f1de_0
-  - python=3.6.12=hffdb5ce_0_cpython
+  - python=3.6.13=hffdb5ce_0_cpython
   - python_abi=3.6=2_cp36m
   - rdkit=2021.03.3=py36h59cdaa9_0
   - readline=8.1=h46c0cb4_0

@@ -2,10 +2,6 @@ from setuptools import setup
 from setuptools import find_packages
 import subprocess
 
-# conda create --name env_yield_prediction python=3.6.12 -y
-
-# python setup.py install
-
 # conda-forge
 bashCommand1 = "conda config --add channels conda-forge"
 process = subprocess.Popen(bashCommand1.split(), stdout=subprocess.PIPE)
@@ -30,7 +26,7 @@ setup(name='yield_prediction',
       package_data={'yield_prediction': ['README.md']},
       packages=find_packages())
 
-bashCommand3 = "conda install -n env_yield_prediction rdkit=2021.03.3 -y"
+bashCommand3 = "conda install -n yield_prediction rdkit=2021.03.3 -y"
 process = subprocess.Popen(bashCommand3.split(), stdout=subprocess.PIPE)
 output, error = process.communicate()
 

@@ -71,13 +71,13 @@ class kernel():
         if self.kernel_name == "WeisfeilerLehman":
             print("-------- WL Fit --------")
             self.fitted_kernel = self.kernel.fit_transform(X, self.kernel_function)
-            print("Fitted non-linear kernel: \n", self.fitted_kernel)
-            print("Fitted non-linear kernel shape: \n", self.fitted_kernel.shape)
+            #print("Fitted non-linear kernel: \n", self.fitted_kernel)
+            #print("Fitted non-linear kernel shape: \n", self.fitted_kernel.shape)
             #with open('fitted_kernel.csv', 'w') as f:
             #    write = csv.writer(f)
             #    write.writerow(self.kernel_function)
             #    write.writerows(self.fitted_kernel)
-            print("-------- WL Fitted --------")
+            #print("-------- WL Fitted --------")
 
         else:
             self.fitted_kernel = self.kernel.fit_transform(X)
@@ -92,9 +92,9 @@ class kernel():
         if self.kernel_name == "WeisfeilerLehman":
             print("-------- WL Transform --------")
             self.transformed_kernel = self.kernel.transform(X, self.kernel_function)
-            print("Transformed non-linear kernel: \n", self.transformed_kernel)
-            print("Transformed non-linear kernel shape: \n", self.transformed_kernel.shape)
-            print("-------- WL Transformed --------")
+            #print("Transformed non-linear kernel: \n", self.transformed_kernel)
+            #print("Transformed non-linear kernel shape: \n", self.transformed_kernel.shape)
+            #print("-------- WL Transformed --------")
         else:
             self.transformed_kernel = self.kernel.transform(X)
             print("Transformed linear kernel: \n", self.transformed_kernel)
