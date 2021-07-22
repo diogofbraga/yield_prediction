@@ -289,7 +289,7 @@ class WeisfeilerLehman(Kernel):
         if kernel_function is 'polynomial':
             scale = 1
             bias = 0
-            degree = 2
+            degree = 0.5
             if mode == 'fit_transform':
                 K = (scale * self.km_train + bias) ** degree
             else:

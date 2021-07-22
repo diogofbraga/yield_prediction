@@ -319,7 +319,7 @@ descriptor_names=[
 
 descriptor_names=[
     'graph_descriptors/WLlinear_2', 'graph_descriptors/WLlinear_3', 'graph_descriptors/WLlinear_4', 'graph_descriptors/WLlinear_5', 
-    'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3', 'graph_descriptors/WLpolynomial_4', 'graph_descriptors/WLpolynomial_5'
+    'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3', 'graph_descriptors/WLpolynomial_4', 'graph_descriptors/WLpolynomial_5',
     ]
 
 test_types=['out_of_sample']
