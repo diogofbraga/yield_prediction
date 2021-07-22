@@ -25,3 +25,5 @@ yield_prediction/tools/utils/__pycache__
 yield_prediction/tools/data/__pycache__
 yield_prediction/tools/__pycache__
 yield_prediction/tools/machine_learning/grakel_nonlinear/__pycache__
+dist/
+yield_prediction.egg-info/
