@@ -6,6 +6,7 @@ import warnings
 
 import numpy as np
 import joblib
+import csv
 
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
@@ -253,188 +254,136 @@ class WeisfeilerLehman(Kernel):
         elif self._method_calling == 2:
             return K, base_graph_kernel
 
+    def calculate_distance_kernel(self, mode):
+        if mode == 'fit_transform':
+            D = np.zeros(self.km_train.shape)
 
-    def non_linearity(self, K, kernel_function):
+            for row in range(len(self.km_train)): # rows
+                for column in range(len(self.km_train[row])): # columns compared with rows
+                    D[row][column] = self.km_train[row][row] + self.km_train[column][column] - (2 * self.km_train[row][column])
+        else:
+            D = np.zeros(self.km_test.shape)
 
-        print("----- SUM -----")
-        print("Kernel matrix before non-linearity: \n", K)
+            for row in range(len(self.km_test)): # rows
+                for column in range(len(self.km_test[row])): # columns compared with rows
+                    D[row][column] = self.km_test[row][row] + self.km_train[column][column] - (2 * self.km_test[row][column])
+
+        return D
+
+    def non_linearity(self, kernel_function, mode):
+
+        #print("----- SUM -----")
+        #if mode == 'fit_transform':
+        #    print("Kernel matrix before non-linearity: \n", self.km_train)
+        #else:
+        #    print("Kernel matrix before non-linearity: \n", self.km_test)
         #kernel_function = 'polynomial'
-        print("Kernel function:", kernel_function)
+        #print("Kernel function:", kernel_function)
+        
         if kernel_function is 'polynomial':
             scale = 1
             bias = 0
             degree = 2
-            K = (scale * K + bias) ** degree
+            if mode == 'fit_transform':
+                K = (scale * self.km_train + bias) ** degree
+            else:
+                K = (scale * self.km_test + bias) ** degree
+        
+        elif kernel_function is 'sigmoidlogistic': # The matrix values are too small, with 1 we lose the differences
+            if mode == 'fit_transform':
+                K = 1 / (1 + np.exp(-self.km_train))
+            else:
+                K = 1 / (1 + np.exp(-self.km_test))
 
-        elif kernel_function is 'sigmoidlogistic':
-            K = 1 / (1 + np.exp(-K)) # The matrix values are too small, with 1 we lose the differences
-
-        elif kernel_function is 'sigmoidhyperbolictangent':
+        elif kernel_function is 'sigmoidhyperbolictangent': # Return a matrix with only 1s
             scale = 1
             bias = 0
-            K = np.tanh(scale * K + bias) # Return a matrix with only 1s
-            #K = np.tan(scale * K + bias) # It doesn't seem to work with the normalize = True
-            #K = np.arctan(scale * K + bias) # It doesn't seem to work with the normalize = True
+            if mode == 'fit_transform':
+                K = np.tanh(scale * self.km_train + bias)
+                #K = np.tan(scale * K + bias) # It doesn't seem to work with the normalize = True
+                #K = np.arctan(scale * K + bias) # It doesn't seem to work with the normalize = True
+            else:
+                K = np.tanh(scale * self.km_test + bias)
 
         elif kernel_function is 'gaussian':
+            if mode == 'fit_transform':
+                sigma = float(1/self.km_train.shape[1])
+            else:
+                sigma = float(1/self.km_test.shape[1])
 
-            D = np.zeros(K.shape)
-            for row in range(len(K)): # rows
-                if row >= K.shape[1]: # rows compared with columns
-                    continue
-                for column in range(len(K[row])): # columns compared with rows
-                    if column >= K.shape[0]:
-                        continue
-                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
-
-            sigma = float(1/K.shape[1])
+            D = self.calculate_distance_kernel(mode)
             variance = np.power(sigma,2)
-
             K = np.exp(-((np.abs(D)) ** 2)/(2*variance))
 
         elif kernel_function is 'exponential':
+            if mode == 'fit_transform':
+                sigma = float(1/self.km_train.shape[1])
+            else:
+                sigma = float(1/self.km_test.shape[1])
 
-            D = np.zeros(K.shape)
-            for row in range(len(K)): # rows
-                if row >= K.shape[1]: # rows compared with columns
-                    continue
-                for column in range(len(K[row])): # columns compared with rows
-                    if column >= K.shape[0]:
-                        continue
-                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
-
-            sigma = float(1/K.shape[1])
+            D = self.calculate_distance_kernel(mode)
             variance = np.power(sigma,2)
-
             K = np.exp(-(np.abs(D))/(2*variance))
+        
+        if kernel_function is 'rbf':
+            if mode == 'fit_transform':
+                gamma = float(1/self.km_train.shape[1])
+            else:
+                gamma = float(1/self.km_test.shape[1])
 
-        elif kernel_function is 'rbf':
-            gamma = float(1/K.shape[1])
-
-            D = np.zeros(K.shape)
-            ##print(D)
-            ##print("D shape", D.shape)
-            ##print("K shape", K.shape)
-            ##print(len(K))
-            for row in range(len(K)): # rows
-                if row >= K.shape[1]: # rows compared with columns
-                    continue
-                for column in range(len(K[row])): # columns compared with rows
-                    if column >= K.shape[0]:
-                        continue
-                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
-            ##print("D: \n", D)
-
+            D = self.calculate_distance_kernel(mode)
             K = np.exp(-gamma * (np.abs(D)) ** 2)
-
+        
         elif kernel_function is 'laplacian':
+            if mode == 'fit_transform':
+                standard_deviation = float(1/self.km_train.shape[1])
+            else:
+                standard_deviation = float(1/self.km_test.shape[1])
 
-            D = np.zeros(K.shape)
-            for row in range(len(K)): # rows
-                if row >= K.shape[1]: # rows compared with columns
-                    continue
-                for column in range(len(K[row])): # columns compared with rows
-                    if column >= K.shape[0]:
-                        continue
-                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
-
-            standard_deviation = float(1/K.shape[1])
-
+            D = self.calculate_distance_kernel(mode)
             K = np.exp(-(np.abs(D))/standard_deviation)
         
-        elif kernel_function is 'rationalquadratic':
+        elif kernel_function is 'rationalquadratic': # Return a matrix with only 0s
+            if mode == 'fit_transform':
+                standard_deviation = float(1/self.km_train.shape[1])
+            else:
+                standard_deviation = float(1/self.km_test.shape[1])
 
-            D = np.zeros(K.shape)
-            for row in range(len(K)): # rows
-                if row >= K.shape[1]: # rows compared with columns
-                    continue
-                for column in range(len(K[row])): # columns compared with rows
-                    if column >= K.shape[0]:
-                        continue
-                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
-
+            D = self.calculate_distance_kernel(mode)
             bias = 0
-
             K = 1 - (((np.abs(D)) ** 2)/((np.abs(D)) ** 2) + bias)
 
         elif kernel_function is 'multiquadratic':
-
-            D = np.zeros(K.shape)
-            for row in range(len(K)): # rows
-                if row >= K.shape[1]: # rows compared with columns
-                    continue
-                for column in range(len(K[row])): # columns compared with rows
-                    if column >= K.shape[0]:
-                        continue
-                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
-
+            D = self.calculate_distance_kernel(mode)
             bias = 1
-
             K = np.sqrt(((np.abs(D)) ** 2) + np.power(bias,2))
 
         elif kernel_function is 'inversemultiquadratic':
-
-            D = np.zeros(K.shape)
-            for row in range(len(K)): # rows
-                if row >= K.shape[1]: # rows compared with columns
-                    continue
-                for column in range(len(K[row])): # columns compared with rows
-                    if column >= K.shape[0]:
-                        continue
-                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
-
+            D = self.calculate_distance_kernel(mode)
             bias = 1
-
             K = 1 / np.sqrt(((np.abs(D)) ** 2) + np.power(bias,2))
-
-        elif kernel_function is 'power':
-
-            D = np.zeros(K.shape)
-            for row in range(len(K)): # rows
-                if row >= K.shape[1]: # rows compared with columns
-                    continue
-                for column in range(len(K[row])): # columns compared with rows
-                    if column >= K.shape[0]:
-                        continue
-                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
-
+        
+        elif kernel_function is 'power': # Problems with the division
+            D = self.calculate_distance_kernel(mode)
             degree = 2
-
             K = -(np.abs(D) ** degree)
 
-        elif kernel_function is 'log':
-
-            D = np.zeros(K.shape)
-            for row in range(len(K)): # rows
-                if row >= K.shape[1]: # rows compared with columns
-                    continue
-                for column in range(len(K[row])): # columns compared with rows
-                    if column >= K.shape[0]:
-                        continue
-                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
-
+        elif kernel_function is 'log': # Problems with the division
+            D = self.calculate_distance_kernel(mode)
             degree = 2
-
             K = -np.log((np.abs(D) ** degree) + 1)
 
         elif kernel_function is 'cauchy':
+            if mode == 'fit_transform':
+                sigma = float(1/self.km_train.shape[1])
+            else:
+                sigma = float(1/self.km_test.shape[1])
 
-            D = np.zeros(K.shape)
-            for row in range(len(K)): # rows
-                if row >= K.shape[1]: # rows compared with columns
-                    continue
-                for column in range(len(K[row])): # columns compared with rows
-                    if column >= K.shape[0]:
-                        continue
-                    D[row][column] = K[row][row] + K[column][column] - (2 * K[row][column])
-
-            sigma = float(1/K.shape[1])
+            D = self.calculate_distance_kernel(mode)
             variance = np.power(sigma,2)
-
             K = 1 / (1 + ((np.abs(D)) ** 2)/variance)
-            
 
-        print("Kernel matrix after non-linearity: \n", K)
+        #print("Kernel matrix after non-linearity: \n", K)
         return K
 
 
@@ -464,9 +413,10 @@ class WeisfeilerLehman(Kernel):
             raise ValueError('transform input cannot be None')
         else:
             #print("X", X)
-            km, self.X = self.parse_input(X)
+            self.km_train, self.X = self.parse_input(X)
 
-        km = self.non_linearity(km, kernel_function)
+        mode = 'fit_transform'
+        km = self.non_linearity(kernel_function, mode)
 
         self._X_diag = np.diagonal(km)
         if self.normalize:
@@ -591,15 +541,16 @@ class WeisfeilerLehman(Kernel):
 
         if self._parallel is None:
             # Calculate the kernel matrix without parallelization
-            K = np.sum((self.X[i].transform(g) for (i, g)
+            self.km_test = np.sum((self.X[i].transform(g) for (i, g)
                        in enumerate(generate_graphs(WL_labels_inverse, nl))), axis=0)
 
         else:
             # Calculate the kernel marix with parallelization
-            K = np.sum(self._parallel(joblib.delayed(etransform)(self.X[i], g) for (i, g)
+            self.km_test = np.sum(self._parallel(joblib.delayed(etransform)(self.X[i], g) for (i, g)
                        in enumerate(generate_graphs(WL_labels_inverse, nl))), axis=0)
 
-        #K = self.non_linearity(K, kernel_function)
+        mode = 'transform'
+        K = self.non_linearity(kernel_function, mode)
 
         self._is_transformed = True
         if self.normalize:
