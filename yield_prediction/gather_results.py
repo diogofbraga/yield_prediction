@@ -214,8 +214,9 @@ fps =  [
 '''  
 
 graphs_folders = [
-    'WLlinear_2', 'WLlinear_3', 'WLlinear_4', 'WLlinear_5', 
-    'WLpolynomial_2', 'WLpolynomial_3', 'WLpolynomial_4', 'WLpolynomial_5', 
+    'WLlinear_2', 'WLlinear_3', 
+    'WLpolynomial_2', 'WLpolynomial_3', 
+    'WLrbf_2', 'WLrbf_3'
     ]
 
 dirs = defaultdict()
@@ -318,8 +319,9 @@ descriptor_names=[
 '''
 
 descriptor_names=[
-    'graph_descriptors/WLlinear_2', 'graph_descriptors/WLlinear_3', 'graph_descriptors/WLlinear_4', 'graph_descriptors/WLlinear_5', 
-    'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3', 'graph_descriptors/WLpolynomial_4', 'graph_descriptors/WLpolynomial_5',
+    'graph_descriptors/WLlinear_2', 'graph_descriptors/WLlinear_3', 
+    'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3',
+    'graph_descriptors/WLrbf_2', 'graph_descriptors/WLrbf_3'
     ]
 
 test_types=['out_of_sample']
