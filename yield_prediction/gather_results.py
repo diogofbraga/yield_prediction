@@ -211,13 +211,19 @@ fps =  [
             'RDK_512', 'RDK_1024', 'RDK_2048',
         'MACCS', 
         ]
-'''      
+'''  
+
+graphs_folders = [
+    'WLlinear_2', 'WLlinear_3', 'WLlinear_4', 'WLlinear_5', 
+    'WLpolynomial_2', 'WLpolynomial_3', 'WLpolynomial_4', 'WLpolynomial_5', 
+    ]
 
 dirs = defaultdict()
 #dirs['quantum'] = 'quantum_descriptors'
 #dirs['quantum_noI'] = 'quantum_descriptors_noI'
 #dirs['one-hot'] = 'one_hot_encodings'
-dirs['graphs'] = 'graph_descriptors'
+for graph in graphs_folders:
+    dirs['{}'.format(graph)] = 'graph_descriptors/{}'.format(graph)
 #for fp in fps:
 #    dirs['{}_raw'.format(fp)] = 'fp_descriptors/{}/raw'.format(fp)
 #    dirs['{}_concat'.format(fp)] = 'fp_descriptors/{}/concat'.format(fp)
@@ -312,7 +318,8 @@ descriptor_names=[
 '''
 
 descriptor_names=[
-    'graph_descriptors'
+    'graph_descriptors/WLlinear_2', 'graph_descriptors/WLlinear_3', 'graph_descriptors/WLlinear_4', 'graph_descriptors/WLlinear_5', 
+    'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3', 'graph_descriptors/WLpolynomial_4', 'graph_descriptors/WLpolynomial_5'
     ]
 
 test_types=['out_of_sample']

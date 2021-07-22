@@ -279,6 +279,12 @@ class WeisfeilerLehman(Kernel):
         #    print("Kernel matrix before non-linearity: \n", self.km_test)
         #kernel_function = 'polynomial'
         #print("Kernel function:", kernel_function)
+
+        if kernel_function is 'linear':
+            if mode == 'fit_transform':
+                K = self.km_train
+            else:
+                K = self.km_test
         
         if kernel_function is 'polynomial':
             scale = 1
