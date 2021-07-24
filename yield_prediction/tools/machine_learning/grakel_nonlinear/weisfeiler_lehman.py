@@ -289,7 +289,7 @@ class WeisfeilerLehman(Kernel):
         if kernel_function is 'polynomial':
             scale = 1
             bias = 0
-            degree = 0.5
+            degree = 2
             if mode == 'fit_transform':
                 K = (scale * self.km_train + bias) ** degree
             else:
@@ -425,9 +425,12 @@ class WeisfeilerLehman(Kernel):
         km = self.non_linearity(kernel_function, mode)
 
         self._X_diag = np.diagonal(km)
+        #print("Xdiag", self._X_diag)
+        #print("Xdiag shape", self._X_diag.shape)
         if self.normalize:
             old_settings = np.seterr(divide='ignore')
-            km = np.nan_to_num(np.divide(km, np.sqrt(np.outer(self._X_diag, self._X_diag)))) # abs() added by diogofbraga
+            #print("Divide km by sqrt(outer result) \n", np.divide(km, np.sqrt(np.outer(self._X_diag, self._X_diag))))
+            km = np.nan_to_num(np.divide(km, np.sqrt(np.outer(self._X_diag, self._X_diag))))
             np.seterr(**old_settings)
         return km
 
@@ -561,7 +564,15 @@ class WeisfeilerLehman(Kernel):
         self._is_transformed = True
         if self.normalize:
             X_diag, Y_diag = self.diagonal()
+            #print("Ydiag", Y_diag)
+            if kernel_function is 'polynomial':
+                Y_diag = np.power(Y_diag,2)
+            #print("Xdiag", X_diag)
+            #print("Xdiag", X_diag.shape)
+            #print("Ydiag", Y_diag)
+            #print("Ydiag", Y_diag.shape)
             old_settings = np.seterr(divide='ignore')
+            #print("Divide km by sqrt(outer result) \n", np.divide(K, np.sqrt(np.outer(Y_diag, X_diag))))
             K = np.nan_to_num(np.divide(K, np.sqrt(np.outer(Y_diag, X_diag))))
             np.seterr(**old_settings)
 
@@ -588,10 +599,15 @@ class WeisfeilerLehman(Kernel):
         try:
             check_is_fitted(self, ['_X_diag'])
             if self._is_transformed:
+                #print("selfX0", self.X[0])
+                #print("selfX0", self.X[0].diagonal())
+                ##print("selfX0", self.X[0].diagonal()[1])
+                #print("selfX0 shape", self.X[0].diagonal()[1].shape)
                 Y_diag = self.X[0].diagonal()[1]
                 for i in range(1, self._n_iter):
                     Y_diag += self.X[i].diagonal()[1]
         except NotFittedError:
+            print("EXCEPTION: NOT FITTED")
             # Calculate diagonal of X
             if self._is_transformed:
                 X_diag, Y_diag = self.X[0].diagonal()
