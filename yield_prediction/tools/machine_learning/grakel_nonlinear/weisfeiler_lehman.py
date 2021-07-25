@@ -278,7 +278,7 @@ class WeisfeilerLehman(Kernel):
         #else:
         #    print("Kernel matrix before non-linearity: \n", self.km_test)
         #kernel_function = 'polynomial'
-        print("Kernel function:", kernel_function)
+        #print("Kernel function:", kernel_function)
 
         if kernel_function is 'linear':
             if mode == 'fit_transform':
@@ -287,29 +287,36 @@ class WeisfeilerLehman(Kernel):
                 K = self.km_test
         
         if kernel_function is 'polynomial':
-            scale = 1
-            bias = 0
-            degree = 2
+            self.scale = 1
+            self.bias = 0
+            self.degree = 2
             if mode == 'fit_transform':
-                K = (scale * self.km_train + bias) ** degree
+                K = (self.scale * self.km_train + self.bias) ** self.degree
             else:
-                K = (scale * self.km_test + bias) ** degree
+                K = (self.scale * self.km_test + self.bias) ** self.degree
         
-        elif kernel_function is 'sigmoidlogistic': # The matrix values are too small, with 1 we lose the differences
+        elif kernel_function is 'sigmoidlogistic': # Normalised matrix is returning values bigger than 1
+            self.scale = 0.01
             if mode == 'fit_transform':
-                K = 1 / (1 + np.exp(-self.km_train))
+                K = 1 / (1 + np.exp(-self.km_train * self.scale))
             else:
-                K = 1 / (1 + np.exp(-self.km_test))
+                K = 1 / (1 + np.exp(-self.km_test * self.scale))
 
-        elif kernel_function is 'sigmoidhyperbolictangent': # Return a matrix with only 1s
-            scale = 1
-            bias = 0
+        elif kernel_function is 'sigmoidhyperbolictangent': # Normalised matrix is returning values bigger than 1
+            self.scale = 0.001
+            self.bias = 0
             if mode == 'fit_transform':
-                K = np.tanh(scale * self.km_train + bias)
-                #K = np.tan(scale * K + bias) # It doesn't seem to work with the normalize = True
-                #K = np.arctan(scale * K + bias) # It doesn't seem to work with the normalize = True
+                K = np.tanh(self.scale * self.km_train + self.bias)
             else:
-                K = np.tanh(scale * self.km_test + bias)
+                K = np.tanh(self.scale * self.km_test + self.bias)
+
+        elif kernel_function is 'sigmoidarctangent':
+            self.scale = 0.01
+            self.bias = 0
+            if mode == 'fit_transform':
+                K = np.arctan(self.scale * self.km_train + self.bias)
+            else:
+                K = np.arctan(self.scale * self.km_test + self.bias)
 
         elif kernel_function is 'gaussian':
             if mode == 'fit_transform':
@@ -389,7 +396,7 @@ class WeisfeilerLehman(Kernel):
             variance = np.power(sigma,2)
             K = 1 / (1 + ((np.abs(D)) ** 2)/variance)
 
-        #print("Kernel matrix after non-linearity: \n", K)
+        #print("Kernel matrix after non-linearity (WITHOUT NORMALISATION): \n", K)
         return K
 
 
@@ -420,6 +427,8 @@ class WeisfeilerLehman(Kernel):
         else:
             #print("X", X)
             self.km_train, self.X = self.parse_input(X)
+
+        self.xdiag = np.diagonal(self.km_train)
 
         mode = 'fit_transform'
         km = self.non_linearity(kernel_function, mode)
@@ -565,14 +574,39 @@ class WeisfeilerLehman(Kernel):
         if self.normalize:
             X_diag, Y_diag = self.diagonal()
             #print("Ydiag", Y_diag)
-            if kernel_function is 'polynomial':
-                Y_diag = np.power(Y_diag,2)
+            if kernel_function is 'linear':
+                xdiag = self.xdiag
+                pass
+
+            elif kernel_function is 'polynomial':
+                Y_diag = np.power(self.scale * Y_diag + self.bias, self.degree)
+                xdiag = np.power(self.scale * self.xdiag + self.bias, self.degree)
+
+            elif kernel_function is 'sigmoidlogistic':
+                Y_diag = 1 / (1 + np.exp(-Y_diag * self.scale))
+                xdiag = 1 / (1 + np.exp(-self.xdiag * self.scale))
+
+            elif kernel_function is 'sigmoidhyperbolictangent':
+                Y_diag = np.tanh(self.scale * Y_diag + self.bias)
+                xdiag = np.tanh(self.scale * self.xdiag + self.bias)
+
+            elif kernel_function is 'sigmoidarctangent':
+                Y_diag = np.arctan(self.scale * Y_diag + self.bias)
+                xdiag = np.arctan(self.scale * self.xdiag + self.bias)
+
+
             #print("Xdiag", X_diag)
             #print("Xdiag", X_diag.shape)
+            #print("xdiag test", xdiag)
+            #print("xdiag test", xdiag.shape)
+            #if (X_diag == xdiag).all():
+            #    print("--- EQUAL ARRAYS ---")
+            #else:
+            #    print("ERROR: Bad conversion")
             #print("Ydiag", Y_diag)
             #print("Ydiag", Y_diag.shape)
             old_settings = np.seterr(divide='ignore')
-            #print("Divide km by sqrt(outer result) \n", np.divide(K, np.sqrt(np.outer(Y_diag, X_diag))))
+            #print("NORMALISATION: Divide km by sqrt(outer result) \n", np.divide(K, np.sqrt(np.outer(Y_diag, X_diag))))
             K = np.nan_to_num(np.divide(K, np.sqrt(np.outer(Y_diag, X_diag))))
             np.seterr(**old_settings)
 

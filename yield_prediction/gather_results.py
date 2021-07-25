@@ -214,8 +214,11 @@ fps =  [
 '''  
 
 graphs_folders = [
-    'WLlinear_2', 'WLlinear_3', 'WLlinear_4', 
-    'WLpolynomial_2', 'WLpolynomial_3', 'WLpolynomial_4'
+    'WLlinear_2', 'WLlinear_3', 'WLlinear_4', 'WLlinear_5', 
+    'WLpolynomial_2', 'WLpolynomial_3', 'WLpolynomial_4', 'WLpolynomial_5',
+    'WLsigmoidlogistic_2', 'WLsigmoidlogistic_3', 'WLsigmoidlogistic_4', 'WLsigmoidlogistic_5',
+    'WLsigmoidhyperbolictangent_2', 'WLsigmoidhyperbolictangent_3', 'WLsigmoidhyperbolictangent_4', 'WLsigmoidhyperbolictangent_5',
+    'WLsigmoidarctangent_2', 'WLsigmoidarctangent_3', 'WLsigmoidarctangent_4', 'WLsigmoidarctangent_5'
     ]
 
 dirs = defaultdict()
@@ -318,8 +321,12 @@ descriptor_names=[
 '''
 
 descriptor_names=[
-    'graph_descriptors/WLlinear_2', 'graph_descriptors/WLlinear_3', 'graph_descriptors/WLlinear_4',
-    'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3', 'graph_descriptors/WLpolynomial_4'
+    'graph_descriptors/WLlinear_2', 'graph_descriptors/WLlinear_3', 'graph_descriptors/WLlinear_4', 'graph_descriptors/WLlinear_5',
+    'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3', 'graph_descriptors/WLpolynomial_4', 'graph_descriptors/WLpolynomial_5',
+    'graph_descriptors/WLsigmoidlogistic_2', 'graph_descriptors/WLsigmoidlogistic_3', 'graph_descriptors/WLsigmoidlogistic_4', 'graph_descriptors/WLsigmoidlogistic_5',
+    'graph_descriptors/WLsigmoidhyperbolictangent_2', 'graph_descriptors/WLsigmoidhyperbolictangent_3', 'graph_descriptors/WLsigmoidhyperbolictangent_4', 'graph_descriptors/WLsigmoidhyperbolictangent_5',
+    'graph_descriptors/WLsigmoidarctangent_2', 'graph_descriptors/WLsigmoidarctangent_3', 'graph_descriptors/WLsigmoidarctangent_4', 'graph_descriptors/WLsigmoidarctangent_5'
+  
     ]
 
 test_types=['out_of_sample']
