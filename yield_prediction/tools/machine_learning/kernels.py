@@ -55,7 +55,7 @@ class kernel():
 
 
         
-    def fit_and_transform(self, X):
+    def fit_and_transform(self, X_train, X_test):
         """
         Fit and transform on the same dataset. Calculates X_fit by X_fit 
         kernel matrix.
@@ -70,7 +70,7 @@ class kernel():
 
         if self.kernel_name == "WeisfeilerLehman":
             print("-------- WL Fit --------")
-            self.fitted_kernel = self.kernel.fit_transform(X, self.kernel_function)
+            self.fitted_kernel = self.kernel.fit_transform(X_train, self.kernel_function, X_test)
             #print("Fitted non-linear kernel: \n", self.fitted_kernel)
             #print("Fitted non-linear kernel shape: \n", self.fitted_kernel.shape)
             #with open('fitted_kernel.csv', 'w') as f:
@@ -80,7 +80,7 @@ class kernel():
             #print("-------- WL Fitted --------")
 
         else:
-            self.fitted_kernel = self.kernel.fit_transform(X)
+            self.fitted_kernel = self.kernel.fit_transform(X_train)
             print("Fitted linear kernel: \n", self.fitted_kernel)
 
     
@@ -141,9 +141,18 @@ class kernel():
             X_test.
 
         """
-        self.define_kernel(normalize=True, **kernel_params)
+
+        if 'kernel_function' in kernel_params:
+            kernel_function = kernel_params['kernel_function']
+
+        if kernel_function is 'rbf':
+            normalize = False
+        else:
+            normalize = True
+
+        self.define_kernel(normalize=normalize, **kernel_params)
         
-        self.fit_and_transform(X_train)
+        self.fit_and_transform(X_train, X_test)
         if X_test is not None:
             self.transform_data(X_test)
     
@@ -175,7 +184,16 @@ class kernel():
             X_test.
 
         """
-        self.define_kernel(normalize=True, **kernel_params)
+        
+        if 'kernel_function' in kernel_params:
+            kernel_function = kernel_params['kernel_function']
+
+        if kernel_function is 'rbf':
+            normalize = False
+        else:
+            normalize = True
+
+        self.define_kernel(normalize=normalize, **kernel_params)
         
         if X_train.isnull().values.any():
             print('nan in X_train')

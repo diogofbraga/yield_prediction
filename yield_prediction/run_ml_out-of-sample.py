@@ -113,9 +113,9 @@ def main():
     info['one-hot']['kwargs'] = None
     '''
     graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles)
-    wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent'] # 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
+    wl_kernel_functions = ['linear', 'polynomial', 'sigmoidhyperbolictangent', 'rbf'] # 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
     for i in wl_kernel_functions:
-        for n in np.arange(2, 6): # 2, 11
+        for n in np.arange(2, 11): # 2, 11
             #print("wl_kernel_functions", i, n)
             info['graphs_WL{}_{}'.format(i, n)] = defaultdict()
             info['graphs_WL{}_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)

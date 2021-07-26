@@ -261,12 +261,13 @@ class WeisfeilerLehman(Kernel):
             for row in range(len(self.km_train)): # rows
                 for column in range(len(self.km_train[row])): # columns compared with rows
                     D[row][column] = self.km_train[row][row] + self.km_train[column][column] - (2 * self.km_train[row][column])
+
         else:
             D = np.zeros(self.km_test.shape)
 
             for row in range(len(self.km_test)): # rows
                 for column in range(len(self.km_test[row])): # columns compared with rows
-                    D[row][column] = self.km_test[row][row] + self.km_train[column][column] - (2 * self.km_test[row][column])
+                    D[row][column] = self.dkf_testkm[row][row] + self.km_train[column][column] - (2 * self.km_test[row][column])
 
         return D
 
@@ -286,7 +287,7 @@ class WeisfeilerLehman(Kernel):
             else:
                 K = self.km_test
         
-        if kernel_function is 'polynomial':
+        elif kernel_function is 'polynomial':
             self.scale = 1
             self.bias = 0
             self.degree = 2
@@ -338,14 +339,14 @@ class WeisfeilerLehman(Kernel):
             variance = np.power(sigma,2)
             K = np.exp(-(np.abs(D))/(2*variance))
         
-        if kernel_function is 'rbf':
+        elif kernel_function is 'rbf':
             if mode == 'fit_transform':
-                gamma = float(1/self.km_train.shape[1])
+                self.gamma = float(1/self.km_train.shape[1])
             else:
-                gamma = float(1/self.km_test.shape[1])
+                self.gamma = float(1/self.km_test.shape[1])
 
             D = self.calculate_distance_kernel(mode)
-            K = np.exp(-gamma * (np.abs(D)) ** 2)
+            K = np.exp(-self.gamma * (np.abs(D)) ** 2)
         
         elif kernel_function is 'laplacian':
             if mode == 'fit_transform':
@@ -400,7 +401,7 @@ class WeisfeilerLehman(Kernel):
         return K
 
 
-    def fit_transform(self, X, kernel_function, y=None):
+    def fit_transform(self, X_train, kernel_function, X_test, y=None):
         """Fit and transform, on the same dataset.
         Parameters
         ----------
@@ -419,16 +420,25 @@ class WeisfeilerLehman(Kernel):
             corresponding to the kernel matrix, a calculation between
             all pairs of graphs between target an features
         """
+
         self._method_calling = 2
         self._is_transformed = False
         self.initialize()
-        if X is None:
+
+        if X_train is None:
             raise ValueError('transform input cannot be None')
         else:
             #print("X", X)
-            self.km_train, self.X = self.parse_input(X)
+            self.Xtrain_index = X_train.index.to_flat_index().tolist()
+            self.km_train, self.X = self.parse_input(X_train)
 
         self.xdiag = np.diagonal(self.km_train)
+
+        if kernel_function is 'rbf': # We need this to get the matrix (dkf_testkm) to the distance kernel function
+            if X_test is None:
+                raise ValueError('transform input cannot be None')
+            else:
+                self.dkf_testkm, dkf_testX = self.parse_input(X_test)
 
         mode = 'fit_transform'
         km = self.non_linearity(kernel_function, mode)
@@ -437,11 +447,15 @@ class WeisfeilerLehman(Kernel):
         #print("Xdiag", self._X_diag)
         #print("Xdiag shape", self._X_diag.shape)
         if self.normalize:
+            #print("NORMALIZE: YES")
             old_settings = np.seterr(divide='ignore')
-            #print("Divide km by sqrt(outer result) \n", np.divide(km, np.sqrt(np.outer(self._X_diag, self._X_diag))))
+            #print("NORMALISATION: Divide km by sqrt(outer result) \n", np.divide(km, np.sqrt(np.outer(self._X_diag, self._X_diag))))
             km = np.nan_to_num(np.divide(km, np.sqrt(np.outer(self._X_diag, self._X_diag))))
             np.seterr(**old_settings)
+
+        
         return km
+
 
     def transform(self, X, kernel_function):
         """Calculate the kernel matrix, between given and fitted dataset.
@@ -572,6 +586,7 @@ class WeisfeilerLehman(Kernel):
 
         self._is_transformed = True
         if self.normalize:
+            #print("NORMALIZE: YES")
             X_diag, Y_diag = self.diagonal()
             #print("Ydiag", Y_diag)
             if kernel_function is 'linear':
@@ -605,8 +620,9 @@ class WeisfeilerLehman(Kernel):
             #    print("ERROR: Bad conversion")
             #print("Ydiag", Y_diag)
             #print("Ydiag", Y_diag.shape)
-            old_settings = np.seterr(divide='ignore')
             #print("NORMALISATION: Divide km by sqrt(outer result) \n", np.divide(K, np.sqrt(np.outer(Y_diag, X_diag))))
+
+            old_settings = np.seterr(divide='ignore')
             K = np.nan_to_num(np.divide(K, np.sqrt(np.outer(Y_diag, X_diag))))
             np.seterr(**old_settings)
 
