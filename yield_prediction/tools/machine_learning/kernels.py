@@ -71,8 +71,8 @@ class kernel():
         if self.kernel_name == "WeisfeilerLehman":
             print("-------- WL Fit --------")
             self.fitted_kernel = self.kernel.fit_transform(X_train, self.kernel_function, X_test)
-            print("Fitted non-linear kernel: \n", self.fitted_kernel)
-            print("Fitted non-linear kernel shape: \n", self.fitted_kernel.shape)
+            #print("Fitted non-linear kernel: \n", self.fitted_kernel)
+            #print("Fitted non-linear kernel shape: \n", self.fitted_kernel.shape)
             #with open('fitted_kernel.csv', 'w') as f:
             #    write = csv.writer(f)
             #    write.writerow(self.kernel_function)
@@ -92,8 +92,8 @@ class kernel():
         if self.kernel_name == "WeisfeilerLehman":
             print("-------- WL Transform --------")
             self.transformed_kernel = self.kernel.transform(X, self.kernel_function)
-            print("Transformed non-linear kernel: \n", self.transformed_kernel)
-            print("Transformed non-linear kernel shape: \n", self.transformed_kernel.shape)
+            #print("Transformed non-linear kernel: \n", self.transformed_kernel)
+            #print("Transformed non-linear kernel shape: \n", self.transformed_kernel.shape)
             #print("-------- WL Transformed --------")
         else:
             self.transformed_kernel = self.kernel.transform(X)
@@ -148,7 +148,7 @@ class kernel():
         if kernel_function is 'rbf':
             normalize = False
         else:
-            normalize = False
+            normalize = True
 
         self.define_kernel(normalize=normalize, **kernel_params)
         
