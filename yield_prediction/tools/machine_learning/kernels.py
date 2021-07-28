@@ -319,7 +319,10 @@ class kernel():
 
         if 'kernel_function' in kernel_params:
             kernel_function = kernel_params.pop('kernel_function', None)
-        
+
+        if 'n_iter' in kernel_params:
+            print(kernel_params['n_iter'])
+
         if X_test is not None:
             k_test = 1
             
