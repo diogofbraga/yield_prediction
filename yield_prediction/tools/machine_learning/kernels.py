@@ -43,18 +43,20 @@ class kernel():
         #self.kernel = k(base_kernel=k_base, *args, **kwargs)
         self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)
         
-    def fit_and_transform(self, X):
+    def fit_and_transform(self, X_train, X_test=None):
         """
         Fit and transform on the same dataset. Calculates X_fit by X_fit 
         kernel matrix.
         """
-        self.fitted_kernel = self.kernel.fit_transform(X)
+        if X_test is not None:
+            self.dkf_test = self.kernel.fit_transform(X_test)
+        self.fitted_kernel = self.kernel.fit_transform(X_train)
     
-    def transform_data(self, X):
+    def transform_data(self, X_test):
         """
         Calculates X_fit by X_transform kernel matrix.
         """
-        self.transformed_kernel = self.kernel.transform(X)
+        self.transformed_kernel = self.kernel.transform(X_test)
     
     def calcualte_reduced_X(self, X):
         """
@@ -68,7 +70,7 @@ class kernel():
         # missing mols.
         for i, x in enumerate(X):
             if pd.isnull(x):
-                 missing_mol_indices.append(i)
+                missing_mol_indices.append(i)
             else:
                 present_mol_indices.append(i)
                 reduced_X.append(x)
@@ -97,7 +99,11 @@ class kernel():
         """
         self.define_kernel(normalize=True, **kernel_params)
         
-        self.fit_and_transform(X_train)
+        if self.kernel_function is 'rbf' and X_test is not None:
+            self.fit_and_transform(X_train, X_test)
+        elif self.kernel_function is not 'rbf':
+            self.fit_and_transform(X_train)
+
         if X_test is not None:
             self.transform_data(X_test)
     
@@ -236,35 +242,52 @@ class kernel():
                     = reduced_k_test[i, :]
     
         return k_train, k_test  
+
+    def calculate_distance_kernel(self, mode):
+        if mode == 'fit_transform':
+            D = np.zeros(self.fitted_kernel.shape)
+
+            for row in range(len(self.fitted_kernel)): # rows
+                for column in range(len(self.fitted_kernel[row])): # columns compared with rows
+                    D[row][column] = self.fitted_kernel[row][row] + self.fitted_kernel[column][column] - (2 * self.fitted_kernel[row][column])
+
+        else:
+            D = np.zeros(self.transformed_kernel.shape)
+
+            for row in range(len(self.transformed_kernel)): # rows
+                for column in range(len(self.transformed_kernel[row])): # columns compared with rows
+                    D[row][column] = self.dkf_test[row][row] + self.fitted_kernel[column][column] - (2 * self.transformed_kernel[row][column])
+
+        print("Distance kernel matrix before non-linearity: \n", D)
+        return D
     
         
-
-    
     def non_linearity(self, K, kernel_function):
 
         print("Kernel function:", kernel_function)
+        print("Kernel matrix before non-linearity: \n", K)
 
         if kernel_function is 'linear':
             pass
         
         elif kernel_function is 'polynomial':
-            self.scale = 1
-            self.bias = 0
-            self.degree = 3
-            K = (self.scale * K + self.bias) ** self.degree
+            scale = 1
+            bias = 0
+            degree = 5
+            K = (scale * K + bias) ** degree
         
-        elif kernel_function is 'sigmoidlogistic': # Normalised matrix is returning values bigger than 1
-            self.scale = 0.01
+        elif kernel_function is 'sigmoidlogistic':
+            scale = 1
             K = 1 / (1 + np.exp(-K * self.scale))
 
-        elif kernel_function is 'sigmoidhyperbolictangent': # Normalised matrix is returning values bigger than 1
-            self.scale = 0.001
-            self.bias = 0
-            K = np.tanh(self.scale * K + self.bias)
+        elif kernel_function is 'sigmoidhyperbolictangent':
+            scale = 1
+            bias = 0
+            K = np.tanh(scale * K + bias)
 
         elif kernel_function is 'sigmoidarctangent':
-            self.scale = 0.01
-            self.bias = 0
+            scale = 1
+            bias = 0
             K = np.arctan(self.scale * K + self.bias)
 
         elif kernel_function is 'gaussian':
@@ -282,13 +305,13 @@ class kernel():
             K = np.exp(-self.gamma * (np.abs(K)) ** 2)
         
         elif kernel_function is 'laplacian':
-            standard_deviation = float(1/self.km_test.shape[1])
+            standard_deviation = float(1/K.shape[1])
             K = np.exp(-(np.abs(K))/standard_deviation)
         
         elif kernel_function is 'rationalquadratic': # Return a matrix with only 0s
             standard_deviation = float(1/K.shape[1])
             bias = 0
-            K = 1 - (((np.abs(D)) ** 2)/((np.abs(K)) ** 2) + bias)
+            K = 1 - (((np.abs(K)) ** 2)/((np.abs(K)) ** 2) + bias)
 
         elif kernel_function is 'multiquadratic':
             bias = 1
@@ -311,6 +334,8 @@ class kernel():
             variance = np.power(sigma,2)
             K = 1 / (1 + ((np.abs(K)) ** 2)/variance)
 
+        print("Kernel matrix after non-linearity: \n", K)
+
         return K
 
 
@@ -318,7 +343,7 @@ class kernel():
         k_train = 1
 
         if 'kernel_function' in kernel_params:
-            kernel_function = kernel_params.pop('kernel_function', None)
+            self.kernel_function = kernel_params.pop('kernel_function', None)
 
         if 'n_iter' in kernel_params:
             print(kernel_params['n_iter'])
@@ -332,8 +357,14 @@ class kernel():
                         X_train[i], X_test[i], **kernel_params
                         )
 
-                    train = self.non_linearity(train, kernel_function)
-                    test = self.non_linearity(test, kernel_function)
+                    if self.kernel_function is 'rbf':
+                        mode = 'fit_transform'
+                        train = self.calculate_distance_kernel(mode)
+                        mode = 'transform'
+                        test = self.calculate_distance_kernel(mode)
+
+                    train = self.non_linearity(train, self.kernel_function)
+                    test = self.non_linearity(test, self.kernel_function)
 
                     k_train = k_train * train
                     k_test = k_test * test
@@ -343,8 +374,14 @@ class kernel():
                         X_train[i], X_test[i], **kernel_params
                         )
 
-                    train = self.non_linearity(train, kernel_function)
-                    test = self.non_linearity(test, kernel_function)
+                    if self.kernel_function is 'rbf':
+                        mode = 'fit_transform'
+                        train = self.calculate_distance_kernel(mode)
+                        mode = 'transform'
+                        test = self.calculate_distance_kernel(mode)
+
+                    train = self.non_linearity(train, self.kernel_function)
+                    test = self.non_linearity(test, self.kernel_function)
 
                     k_train = k_train * train
                     k_test = k_test * test
@@ -356,7 +393,11 @@ class kernel():
                     X_train[i], None, **kernel_params
                     )
 
-                train = self.non_linearity(train, kernel_function)
+                if self.kernel_function is 'rbf':
+                    mode = 'fit_transform'
+                    train = self.calculate_distance_kernel(mode)
+
+                train = self.non_linearity(train, self.kernel_function)
 
                 k_train = k_train * train          
             
