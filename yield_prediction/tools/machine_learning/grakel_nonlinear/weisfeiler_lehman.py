@@ -269,9 +269,9 @@ class WeisfeilerLehman(Kernel):
                 for column in range(len(self.km_test[row])): # columns compared with rows
                     D[row][column] = self.dkf_testkm[row][row] + self.km_train[column][column] - (2 * self.km_test[row][column])
 
-        return D
+        return np.abs(D)
 
-    def non_linearity(self, kernel_function, mode):
+    def non_linearity(self, K, kernel_function):
 
         #print("----- SUM -----")
         #if mode == 'fit_transform':
@@ -282,120 +282,71 @@ class WeisfeilerLehman(Kernel):
         print("Kernel function:", kernel_function)
 
         if kernel_function is 'linear':
-            if mode == 'fit_transform':
-                K = self.km_train
-            else:
-                K = self.km_test
+            pass
         
         elif kernel_function is 'polynomial':
             self.scale = 1
             self.bias = 0
             self.degree = 2
-            if mode == 'fit_transform':
-                K = (self.scale * self.km_train + self.bias) ** self.degree
-            else:
-                K = (self.scale * self.km_test + self.bias) ** self.degree
+            K = (self.scale * K + self.bias) ** self.degree
         
         elif kernel_function is 'sigmoidlogistic': # Normalised matrix is returning values bigger than 1
             self.scale = 0.01
-            if mode == 'fit_transform':
-                K = 1 / (1 + np.exp(-self.km_train * self.scale))
-            else:
-                K = 1 / (1 + np.exp(-self.km_test * self.scale))
+            K = 1 / (1 + np.exp(-K * self.scale))
 
         elif kernel_function is 'sigmoidhyperbolictangent': # Normalised matrix is returning values bigger than 1
             self.scale = 0.001
             self.bias = 0
-            if mode == 'fit_transform':
-                K = np.tanh(self.scale * self.km_train + self.bias)
-            else:
-                K = np.tanh(self.scale * self.km_test + self.bias)
+            K = np.tanh(self.scale * K + self.bias)
 
         elif kernel_function is 'sigmoidarctangent':
             self.scale = 0.01
             self.bias = 0
-            if mode == 'fit_transform':
-                K = np.arctan(self.scale * self.km_train + self.bias)
-            else:
-                K = np.arctan(self.scale * self.km_test + self.bias)
+            K = np.arctan(self.scale * K + self.bias)
 
         elif kernel_function is 'gaussian':
-            if mode == 'fit_transform':
-                sigma = float(1/self.km_train.shape[1])
-            else:
-                sigma = float(1/self.km_test.shape[1])
-
-            D = self.calculate_distance_kernel(mode)
+            sigma = float(1/K.shape[1])
             variance = np.power(sigma,2)
-            K = np.exp(-((np.abs(D)) ** 2)/(2*variance))
+            K = np.exp(-((np.abs(K)) ** 2)/(2*variance))
 
         elif kernel_function is 'exponential':
-            if mode == 'fit_transform':
-                sigma = float(1/self.km_train.shape[1])
-            else:
-                sigma = float(1/self.km_test.shape[1])
-
-            D = self.calculate_distance_kernel(mode)
+            sigma = float(1/K.shape[1])
             variance = np.power(sigma,2)
-            K = np.exp(-(np.abs(D))/(2*variance))
+            K = np.exp(-(np.abs(K))/(2*variance))
         
         elif kernel_function is 'rbf':
-            if mode == 'fit_transform':
-                self.gamma = float(1/self.km_train.shape[1])
-            else:
-                self.gamma = float(1/self.km_test.shape[1])
-
-            D = self.calculate_distance_kernel(mode)
-            K = np.exp(-self.gamma * (np.abs(D)) ** 2)
+            self.gamma = float(1/K.shape[1])
+            K = np.exp(-self.gamma * (np.abs(K)) ** 2)
         
         elif kernel_function is 'laplacian':
-            if mode == 'fit_transform':
-                standard_deviation = float(1/self.km_train.shape[1])
-            else:
-                standard_deviation = float(1/self.km_test.shape[1])
-
-            D = self.calculate_distance_kernel(mode)
-            K = np.exp(-(np.abs(D))/standard_deviation)
+            standard_deviation = float(1/self.km_test.shape[1])
+            K = np.exp(-(np.abs(K))/standard_deviation)
         
         elif kernel_function is 'rationalquadratic': # Return a matrix with only 0s
-            if mode == 'fit_transform':
-                standard_deviation = float(1/self.km_train.shape[1])
-            else:
-                standard_deviation = float(1/self.km_test.shape[1])
-
-            D = self.calculate_distance_kernel(mode)
+            standard_deviation = float(1/K.shape[1])
             bias = 0
-            K = 1 - (((np.abs(D)) ** 2)/((np.abs(D)) ** 2) + bias)
+            K = 1 - (((np.abs(D)) ** 2)/((np.abs(K)) ** 2) + bias)
 
         elif kernel_function is 'multiquadratic':
-            D = self.calculate_distance_kernel(mode)
             bias = 1
-            K = np.sqrt(((np.abs(D)) ** 2) + np.power(bias,2))
+            K = np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
 
         elif kernel_function is 'inversemultiquadratic':
-            D = self.calculate_distance_kernel(mode)
             bias = 1
-            K = 1 / np.sqrt(((np.abs(D)) ** 2) + np.power(bias,2))
+            K = 1 / np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
         
         elif kernel_function is 'power': # Problems with the division
-            D = self.calculate_distance_kernel(mode)
             degree = 2
-            K = -(np.abs(D) ** degree)
+            K = -(np.abs(K) ** degree)
 
         elif kernel_function is 'log': # Problems with the division
-            D = self.calculate_distance_kernel(mode)
             degree = 2
-            K = -np.log((np.abs(D) ** degree) + 1)
+            K = -np.log((np.abs(K) ** degree) + 1)
 
         elif kernel_function is 'cauchy':
-            if mode == 'fit_transform':
-                sigma = float(1/self.km_train.shape[1])
-            else:
-                sigma = float(1/self.km_test.shape[1])
-
-            D = self.calculate_distance_kernel(mode)
+            sigma = float(1/K.shape[1])
             variance = np.power(sigma,2)
-            K = 1 / (1 + ((np.abs(D)) ** 2)/variance)
+            K = 1 / (1 + ((np.abs(K)) ** 2)/variance)
 
         #print("Kernel matrix after non-linearity (WITHOUT NORMALISATION): \n", K)
         return K
@@ -429,7 +380,6 @@ class WeisfeilerLehman(Kernel):
             raise ValueError('transform input cannot be None')
         else:
             #print("X", X)
-            self.Xtrain_index = X_train.index.to_flat_index().tolist()
             self.km_train, self.X = self.parse_input(X_train)
 
         self.xdiag = np.diagonal(self.km_train)
@@ -440,8 +390,10 @@ class WeisfeilerLehman(Kernel):
             else:
                 self.dkf_testkm, dkf_testX = self.parse_input(X_test)
 
-        mode = 'fit_transform'
-        km = self.non_linearity(kernel_function, mode)
+            mode = 'fit_transform'
+            km = self.calculate_distance_kernel(mode)
+        else:
+            km = self.km_train
 
         self._X_diag = np.diagonal(km)
         #print("Xdiag", self._X_diag)
@@ -453,7 +405,8 @@ class WeisfeilerLehman(Kernel):
             km = np.nan_to_num(np.divide(km, np.sqrt(np.outer(self._X_diag, self._X_diag))))
             np.seterr(**old_settings)
 
-        
+        km = self.non_linearity(km, kernel_function)
+
         return km
 
 
@@ -581,50 +534,23 @@ class WeisfeilerLehman(Kernel):
             self.km_test = np.sum(self._parallel(joblib.delayed(etransform)(self.X[i], g) for (i, g)
                        in enumerate(generate_graphs(WL_labels_inverse, nl))), axis=0)
 
-        mode = 'transform'
-        K = self.non_linearity(kernel_function, mode)
+        if kernel_function is 'rbf':
+            mode = 'transform'
+            K = self.calculate_distance_kernel(mode)
+        else:
+            K = self.km_test
 
         self._is_transformed = True
         if self.normalize:
             #print("NORMALIZE: YES")
             X_diag, Y_diag = self.diagonal()
             #print("Ydiag", Y_diag)
-            if kernel_function is 'linear':
-                xdiag = self.xdiag
-                pass
-
-            elif kernel_function is 'polynomial':
-                Y_diag = np.power(self.scale * Y_diag + self.bias, self.degree)
-                xdiag = np.power(self.scale * self.xdiag + self.bias, self.degree)
-
-            elif kernel_function is 'sigmoidlogistic':
-                Y_diag = 1 / (1 + np.exp(-Y_diag * self.scale))
-                xdiag = 1 / (1 + np.exp(-self.xdiag * self.scale))
-
-            elif kernel_function is 'sigmoidhyperbolictangent':
-                Y_diag = np.tanh(self.scale * Y_diag + self.bias)
-                xdiag = np.tanh(self.scale * self.xdiag + self.bias)
-
-            elif kernel_function is 'sigmoidarctangent':
-                Y_diag = np.arctan(self.scale * Y_diag + self.bias)
-                xdiag = np.arctan(self.scale * self.xdiag + self.bias)
-
-
-            #print("Xdiag", X_diag)
-            #print("Xdiag", X_diag.shape)
-            #print("xdiag test", xdiag)
-            #print("xdiag test", xdiag.shape)
-            #if (X_diag == xdiag).all():
-            #    print("--- EQUAL ARRAYS ---")
-            #else:
-            #    print("ERROR: Bad conversion")
-            #print("Ydiag", Y_diag)
-            #print("Ydiag", Y_diag.shape)
-            #print("NORMALISATION: Divide km by sqrt(outer result) \n", np.divide(K, np.sqrt(np.outer(Y_diag, X_diag))))
 
             old_settings = np.seterr(divide='ignore')
             K = np.nan_to_num(np.divide(K, np.sqrt(np.outer(Y_diag, X_diag))))
             np.seterr(**old_settings)
+        
+        K = self.non_linearity(K, kernel_function)
 
         return K
 
