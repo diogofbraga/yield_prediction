@@ -11,7 +11,8 @@ import grakel.kernels as kernels
 import sklearn.metrics.pairwise as sklearn_kernels
 
 #from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
-from tools.machine_learning.grakel_nonlinear.weisfeiler_lehman import WeisfeilerLehman
+#from tools.machine_learning.grakel_nonlinear.weisfeiler_lehman import WeisfeilerLehman
+from grakel.kernels.weisfeiler_lehman import WeisfeilerLehman
 from grakel.kernels.vertex_histogram import VertexHistogram
 
 class kernel():
@@ -24,80 +25,36 @@ class kernel():
     def define_kernel(self, *args, **kwargs):
         """
         Defines the graph kernel.
-
         Parameters
         ----------
         *args :
             Graph kernel parameters.
         **kwargs :
             Graph kernel parameters.
-
         Returns
         -------
         None.
-
         """
         base_kernel = self.base_kernel
         if base_kernel is None:
             base_kernel = 'VertexHistogram'
         k = getattr(kernels, self.kernel_name)
         k_base = getattr(kernels, base_kernel)
-
-        if 'kernel_function' in kwargs:
-            self.kernel_function = kwargs.pop('kernel_function', None)
-
-        if self.kernel_name == "WeisfeilerLehman":
-            self.kernel = WeisfeilerLehman(base_graph_kernel=VertexHistogram, *args, **kwargs)
-        else:
-            #self.kernel = k(base_kernel=k_base, *args, **kwargs)
-            self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)  
-
-
-
+        #self.kernel = k(base_kernel=k_base, *args, **kwargs)
+        self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)
         
-    def fit_and_transform(self, X_train, X_test):
+    def fit_and_transform(self, X):
         """
         Fit and transform on the same dataset. Calculates X_fit by X_fit 
         kernel matrix.
         """
-        indices = [179,365]
-        #print("--------", X[indices].name, "--------")
-        #for index, value in X[indices].items():
-        #    print(f"--------- Index : {index}, Value : {value}")
-        #    print("adj matrix:\n", value.get_adjacency_matrix())
-        #    print("edge dict:", value.get_edge_dictionary())
-        #    print("labels:", value.get_labels())
-
-        if self.kernel_name == "WeisfeilerLehman":
-            print("-------- WL Fit --------")
-            self.fitted_kernel = self.kernel.fit_transform(X_train, self.kernel_function, X_test)
-            #print("Fitted non-linear kernel: \n", self.fitted_kernel)
-            #print("Fitted non-linear kernel shape: \n", self.fitted_kernel.shape)
-            #with open('fitted_kernel.csv', 'w') as f:
-            #    write = csv.writer(f)
-            #    write.writerow(self.kernel_function)
-            #    write.writerows(self.fitted_kernel)
-            #print("-------- WL Fitted --------")
-
-        else:
-            self.fitted_kernel = self.kernel.fit_transform(X_train)
-            print("Fitted linear kernel: \n", self.fitted_kernel)
-
+        self.fitted_kernel = self.kernel.fit_transform(X)
     
     def transform_data(self, X):
         """
         Calculates X_fit by X_transform kernel matrix.
         """
-        indices = [179,365]
-        if self.kernel_name == "WeisfeilerLehman":
-            print("-------- WL Transform --------")
-            self.transformed_kernel = self.kernel.transform(X, self.kernel_function)
-            #print("Transformed non-linear kernel: \n", self.transformed_kernel)
-            #print("Transformed non-linear kernel shape: \n", self.transformed_kernel.shape)
-            #print("-------- WL Transformed --------")
-        else:
-            self.transformed_kernel = self.kernel.transform(X)
-            print("Transformed linear kernel: \n", self.transformed_kernel)
+        self.transformed_kernel = self.kernel.transform(X)
     
     def calcualte_reduced_X(self, X):
         """
@@ -111,7 +68,7 @@ class kernel():
         # missing mols.
         for i, x in enumerate(X):
             if pd.isnull(x):
-                missing_mol_indices.append(i)
+                 missing_mol_indices.append(i)
             else:
                 present_mol_indices.append(i)
                 reduced_X.append(x)
@@ -124,14 +81,12 @@ class kernel():
         """
         Fit and transform the X_train data. Calculate the kernel matrix between
         the fitted data (X_train) and X_test.
-
         Parameters
         ----------
         X_train : Series, list, numpy array 
             Training set of molecular graphs. Input must be iterable.
         X_test : Series, list, numpy array 
             Test set of molecular graphs. Input must be iterable.
-
         Returns
         -------
         k_train : numpy array
@@ -139,20 +94,10 @@ class kernel():
         k_test : TYPE
             The kernel matrix between all pairs of graphs in X_train and 
             X_test.
-
         """
-
-        if 'kernel_function' in kernel_params:
-            kernel_function = kernel_params['kernel_function']
-
-        if kernel_function is 'rbf':
-            normalize = False
-        else:
-            normalize = True
-
-        self.define_kernel(normalize=normalize, **kernel_params)
+        self.define_kernel(normalize=True, **kernel_params)
         
-        self.fit_and_transform(X_train, X_test)
+        self.fit_and_transform(X_train)
         if X_test is not None:
             self.transform_data(X_test)
     
@@ -167,14 +112,12 @@ class kernel():
         """
         Fit and transform the X_train data. Calculate the kernel matrix between
         the fitted data (X_train) and X_test.
-
         Parameters
         ----------
         X_train : Series, list, numpy array 
             Training set of molecular graphs. Input must be iterable.
         X_test : Series, list, numpy array 
             Test set of molecular graphs. Input must be iterable.
-
         Returns
         -------
         k_train : numpy array
@@ -182,18 +125,8 @@ class kernel():
         k_test : TYPE
             The kernel matrix between all pairs of graphs in X_train and 
             X_test.
-
         """
-
-        if 'kernel_function' in kernel_params:
-            kernel_function = kernel_params['kernel_function']
-
-        if kernel_function is 'rbf':
-            normalize = False
-        else:
-            normalize = True
-
-        self.define_kernel(normalize=normalize, **kernel_params)
+        self.define_kernel(normalize=True, **kernel_params)
         
         if X_train.isnull().values.any():
             print('nan in X_train')
@@ -302,11 +235,90 @@ class kernel():
                 k_test[reduced_index_X_test[i], reduced_index_X_train] \
                     = reduced_k_test[i, :]
     
-        return k_train, k_test   
+        return k_train, k_test  
     
         
+
+    
+    def non_linearity(self, K, kernel_function):
+
+        print("Kernel function:", kernel_function)
+
+        if kernel_function is 'linear':
+            pass
+        
+        elif kernel_function is 'polynomial':
+            self.scale = 1
+            self.bias = 0
+            self.degree = 3
+            K = (self.scale * K + self.bias) ** self.degree
+        
+        elif kernel_function is 'sigmoidlogistic': # Normalised matrix is returning values bigger than 1
+            self.scale = 0.01
+            K = 1 / (1 + np.exp(-K * self.scale))
+
+        elif kernel_function is 'sigmoidhyperbolictangent': # Normalised matrix is returning values bigger than 1
+            self.scale = 0.001
+            self.bias = 0
+            K = np.tanh(self.scale * K + self.bias)
+
+        elif kernel_function is 'sigmoidarctangent':
+            self.scale = 0.01
+            self.bias = 0
+            K = np.arctan(self.scale * K + self.bias)
+
+        elif kernel_function is 'gaussian':
+            sigma = float(1/K.shape[1])
+            variance = np.power(sigma,2)
+            K = np.exp(-((np.abs(K)) ** 2)/(2*variance))
+
+        elif kernel_function is 'exponential':
+            sigma = float(1/K.shape[1])
+            variance = np.power(sigma,2)
+            K = np.exp(-(np.abs(K))/(2*variance))
+        
+        elif kernel_function is 'rbf':
+            self.gamma = float(1/K.shape[1])
+            K = np.exp(-self.gamma * (np.abs(K)) ** 2)
+        
+        elif kernel_function is 'laplacian':
+            standard_deviation = float(1/self.km_test.shape[1])
+            K = np.exp(-(np.abs(K))/standard_deviation)
+        
+        elif kernel_function is 'rationalquadratic': # Return a matrix with only 0s
+            standard_deviation = float(1/K.shape[1])
+            bias = 0
+            K = 1 - (((np.abs(D)) ** 2)/((np.abs(K)) ** 2) + bias)
+
+        elif kernel_function is 'multiquadratic':
+            bias = 1
+            K = np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
+
+        elif kernel_function is 'inversemultiquadratic':
+            bias = 1
+            K = 1 / np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
+        
+        elif kernel_function is 'power': # Problems with the division
+            degree = 2
+            K = -(np.abs(K) ** degree)
+
+        elif kernel_function is 'log': # Problems with the division
+            degree = 2
+            K = -np.log((np.abs(K) ** degree) + 1)
+
+        elif kernel_function is 'cauchy':
+            sigma = float(1/K.shape[1])
+            variance = np.power(sigma,2)
+            K = 1 / (1 + ((np.abs(K)) ** 2)/variance)
+
+        return K
+
+
     def multiple_descriptor_types(self, X_train, X_test, **kernel_params):
         k_train = 1
+
+        if 'kernel_function' in kernel_params:
+            kernel_function = kernel_params.pop('kernel_function', None)
         
         if X_test is not None:
             k_test = 1
@@ -316,6 +328,10 @@ class kernel():
                     train, test = self.calculate_kernel_matrices_with_missing_mols(
                         X_train[i], X_test[i], **kernel_params
                         )
+
+                    train = self.non_linearity(train, kernel_function)
+                    test = self.non_linearity(test, kernel_function)
+
                     k_train = k_train * train
                     k_test = k_test * test
             else:
@@ -323,6 +339,10 @@ class kernel():
                     train, test = self.calculate_kernel_matrices(
                         X_train[i], X_test[i], **kernel_params
                         )
+
+                    train = self.non_linearity(train, kernel_function)
+                    test = self.non_linearity(test, kernel_function)
+
                     k_train = k_train * train
                     k_test = k_test * test
                     
@@ -332,6 +352,9 @@ class kernel():
                 train = self.calculate_kernel_matrices(
                     X_train[i], None, **kernel_params
                     )
+
+                train = self.non_linearity(train, kernel_function)
+
                 k_train = k_train * train          
             
         return k_train, k_test
