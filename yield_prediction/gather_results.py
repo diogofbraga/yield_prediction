@@ -326,7 +326,7 @@ descriptor_names=[
     'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3', 'graph_descriptors/WLpolynomial_4', 'graph_descriptors/WLpolynomial_5', #'graph_descriptors/WLpolynomial_6', 'graph_descriptors/WLpolynomial_7', 'graph_descriptors/WLpolynomial_8', 'graph_descriptors/WLpolynomial_9', 'graph_descriptors/WLpolynomial_10',
     'graph_descriptors/WLsigmoidlogistic_2', 'graph_descriptors/WLsigmoidlogistic_3', 'graph_descriptors/WLsigmoidlogistic_4', 'graph_descriptors/WLsigmoidlogistic_5',
     'graph_descriptors/WLsigmoidhyperbolictangent_2', 'graph_descriptors/WLsigmoidhyperbolictangent_3', 'graph_descriptors/WLsigmoidhyperbolictangent_4', 'graph_descriptors/WLsigmoidhyperbolictangent_5', #'graph_descriptors/WLsigmoidhyperbolictangent_6', 'graph_descriptors/WLsigmoidhyperbolictangent_7', 'graph_descriptors/WLsigmoidhyperbolictangent_8', 'graph_descriptors/WLsigmoidhyperbolictangent_9', 'graph_descriptors/WLsigmoidhyperbolictangent_10',
-    'graph_descriptors/WLsigmoidarctangent_2', 'graph_descriptors/WLsigmoidarctangent_3', 'graph_descriptors/WLsigmoidarctangent_4', 'graph_descriptors/WLsigmoidarctangent_5'
+    'graph_descriptors/WLsigmoidarctangent_2', 'graph_descriptors/WLsigmoidarctangent_3', 'graph_descriptors/WLsigmoidarctangent_4', 'graph_descriptors/WLsigmoidarctangent_5',
     'graph_descriptors/WLrbf_2', 'graph_descriptors/WLrbf_3', 'graph_descriptors/WLrbf_4', 'graph_descriptors/WLrbf_5', #'graph_descriptors/WLrbf_6', 'graph_descriptors/WLrbf_7', 'graph_descriptors/WLrbf_8', 'graph_descriptors/WLrbf_9', 'graph_descriptors/WLrbf_10'
     ]
 

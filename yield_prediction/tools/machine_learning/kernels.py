@@ -258,14 +258,14 @@ class kernel():
                 for column in range(len(self.transformed_kernel[row])): # columns compared with rows
                     D[row][column] = self.dkf_test[row][row] + self.fitted_kernel[column][column] - (2 * self.transformed_kernel[row][column])
 
-        print("Distance kernel matrix before non-linearity: \n", D)
+        #print("Distance kernel matrix before non-linearity: \n", D)
         return D
     
         
     def non_linearity(self, K, kernel_function):
 
         print("Kernel function:", kernel_function)
-        print("Kernel matrix before non-linearity: \n", K)
+        #print("Kernel matrix before non-linearity: \n", K)
 
         if kernel_function is 'linear':
             pass
@@ -278,7 +278,7 @@ class kernel():
         
         elif kernel_function is 'sigmoidlogistic':
             scale = 1
-            K = 1 / (1 + np.exp(-K * self.scale))
+            K = 1 / (1 + np.exp(-K * scale))
 
         elif kernel_function is 'sigmoidhyperbolictangent':
             scale = 1
@@ -288,7 +288,7 @@ class kernel():
         elif kernel_function is 'sigmoidarctangent':
             scale = 1
             bias = 0
-            K = np.arctan(self.scale * K + self.bias)
+            K = np.arctan(scale * K + bias)
 
         elif kernel_function is 'gaussian':
             sigma = float(1/K.shape[1])
@@ -334,7 +334,7 @@ class kernel():
             variance = np.power(sigma,2)
             K = 1 / (1 + ((np.abs(K)) ** 2)/variance)
 
-        print("Kernel matrix after non-linearity: \n", K)
+        #print("Kernel matrix after non-linearity: \n", K)
 
         return K
 
