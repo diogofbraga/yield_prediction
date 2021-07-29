@@ -79,7 +79,7 @@ class kernel():
         
         return reduced_X, missing_mol_indices, present_mol_indices
         
-    def calculate_kernel_matrices(self, X_train, X_test, **kernel_params):
+    def calculate_kernel_matrices(self, X_train, X_test, kernel_function, **kernel_params):
         """
         Fit and transform the X_train data. Calculate the kernel matrix between
         the fitted data (X_train) and X_test.
@@ -99,22 +99,26 @@ class kernel():
         """
         self.define_kernel(normalize=True, **kernel_params)
         
-        if self.kernel_function is 'rbf' and X_test is not None:
+        if X_test is not None and kernel_function is 'rbf':
             self.fit_and_transform(X_train, X_test)
-        elif self.kernel_function is not 'rbf':
+        elif kernel_function is not 'rbf':
             self.fit_and_transform(X_train)
 
         if X_test is not None:
             self.transform_data(X_test)
     
         k_train = self.fitted_kernel
-        if X_test is not None:
+        if X_test is not None and kernel_function is 'rbf':
+            k_test = self.transformed_kernel
+            dkf_test = self.dkf_test
+            return k_train, k_test, dkf_test
+        elif X_test is not None:
             k_test = self.transformed_kernel
             return k_train, k_test   
         else:
             return k_train
     
-    def calculate_kernel_matrices_with_missing_mols(self, X_train, X_test, **kernel_params):
+    def calculate_kernel_matrices_with_missing_mols(self, X_train, X_test, kernel_function, **kernel_params):
         """
         Fit and transform the X_train data. Calculate the kernel matrix between
         the fitted data (X_train) and X_test.
@@ -197,9 +201,17 @@ class kernel():
             len_reduced_X_test = len(reduced_X_test)
             
             # Calculate kernel matrix on non-missing molecules
+            if kernel_function is 'rbf': # dkf_test
+                reduced_dkf_test = self.kernel.fit_transform(reduced_X_test)
             reduced_k_test = self.kernel.transform(reduced_X_test)
             
             # new_kernel(mol_i, mol_j) = base_kernel(mol_i, mol_j) + 1
+            if kernel_function is 'rbf': # dkf_test
+                np.add(
+                    reduced_dkf_test, 
+                    np.ones((len_reduced_X_test, len_reduced_X_test)), 
+                    reduced_dkf_test
+                ) 
             np.add(
                 reduced_k_test, 
                 np.ones((len_reduced_X_test, len_reduced_X_train)), 
@@ -207,6 +219,22 @@ class kernel():
                 ) 
         
             # missing molecules have value 1 or 2, initialise with ones
+            if kernel_function is 'rbf': # dkf_test
+                dkf_test = np.ones((len_X_test, len_X_test)) 
+
+                reduced_index_dkf_test = present_mol_indices_X_test[
+                    np.arange(reduced_dkf_test.shape[0])
+                    ]
+            
+                for i in range(len_reduced_X_test):
+                    dkf_test[reduced_index_dkf_test[i], reduced_index_dkf_test] \
+                        = reduced_dkf_test[i, :]
+            
+                for i in missing_mol_indices_X_test:
+                    for j in missing_mol_indices_X_test:
+                        dkf_test[i, j] = 2
+
+
             k_test = np.ones((len_X_test, len_X_train)) 
             
             reduced_index_X_test = present_mol_indices_X_test[
@@ -223,6 +251,26 @@ class kernel():
                         
         else:
             print('no nan in X_test')
+            if kernel_function is 'rbf': # dkf_test
+                reduced_dkf_test = self.kernel.fit_transform(X_test)
+
+                len_X_test = len(X_test)
+            
+                np.add(
+                    reduced_dkf_test, 
+                    np.ones((len_X_test, len_X_test)), 
+                    reduced_dkf_test
+                    )
+                
+                k_test = np.ones((len_X_test, len_X_test)) 
+                
+                reduced_index_dkf_test = np.arange(k_test.shape[0])
+                
+                for i in range(len_X_test):
+                    k_test[reduced_index_dkf_test[i], reduced_index_dkf_test] \
+                        = reduced_dkf_test[i, :]
+
+
             reduced_k_test = self.kernel.transform(X_test)
             
             len_X_test = len(X_test)
@@ -241,29 +289,32 @@ class kernel():
                 k_test[reduced_index_X_test[i], reduced_index_X_train] \
                     = reduced_k_test[i, :]
     
-        return k_train, k_test  
+        if kernel_function is 'rbf':
+            return k_train, k_test, dkf_test
+        else:
+            return k_train, k_test
 
-    def calculate_distance_kernel(self, mode):
-        if mode == 'fit_transform':
-            D = np.zeros(self.fitted_kernel.shape)
+    def calculate_distance_kernel(self, train, test=None, dkf_test=None):
+        if test is None:
+            D = np.zeros(train.shape)
 
-            for row in range(len(self.fitted_kernel)): # rows
-                for column in range(len(self.fitted_kernel[row])): # columns compared with rows
-                    D[row][column] = self.fitted_kernel[row][row] + self.fitted_kernel[column][column] - (2 * self.fitted_kernel[row][column])
+            for row in range(len(train)): # rows
+                for column in range(len(train[row])): # columns compared with rows
+                    D[row][column] = train[row][row] + train[column][column] - (2 * train[row][column])
 
         else:
-            D = np.zeros(self.transformed_kernel.shape)
+            D = np.zeros(test.shape)
 
-            for row in range(len(self.transformed_kernel)): # rows
-                for column in range(len(self.transformed_kernel[row])): # columns compared with rows
-                    D[row][column] = self.dkf_test[row][row] + self.fitted_kernel[column][column] - (2 * self.transformed_kernel[row][column])
+            for row in range(len(test)): # rows
+                for column in range(len(test[row])): # columns compared with rows
+                    D[row][column] = dkf_test[row][row] + train[column][column] - (2 * test[row][column])
 
-        #print("Distance kernel matrix before non-linearity: \n", D)
-        return D
+        #print("Distance kernel matrix before non-linearity: \n", abs(D))
+        return abs(D)
     
         
     def non_linearity(self, K, kernel_function):
-
+        
         print("Kernel function:", kernel_function)
         #print("Kernel matrix before non-linearity: \n", K)
 
@@ -273,7 +324,7 @@ class kernel():
         elif kernel_function is 'polynomial':
             scale = 1
             bias = 0
-            degree = 5
+            degree = 2
             K = (scale * K + bias) ** degree
         
         elif kernel_function is 'sigmoidlogistic':
@@ -301,8 +352,8 @@ class kernel():
             K = np.exp(-(np.abs(K))/(2*variance))
         
         elif kernel_function is 'rbf':
-            self.gamma = float(1/K.shape[1])
-            K = np.exp(-self.gamma * (np.abs(K)) ** 2)
+            gamma = float(1/K.shape[1])
+            K = np.exp(-gamma * (np.abs(K)) ** 2)
         
         elif kernel_function is 'laplacian':
             standard_deviation = float(1/K.shape[1])
@@ -343,7 +394,7 @@ class kernel():
         k_train = 1
 
         if 'kernel_function' in kernel_params:
-            self.kernel_function = kernel_params.pop('kernel_function', None)
+            kernel_function = kernel_params.pop('kernel_function', None)
 
         if 'n_iter' in kernel_params:
             print(kernel_params['n_iter'])
@@ -353,35 +404,41 @@ class kernel():
             
             if X_train.isnull().values.any() or X_test.isnull().values.any(): 
                 for i in X_train:
-                    train, test = self.calculate_kernel_matrices_with_missing_mols(
-                        X_train[i], X_test[i], **kernel_params
+                    if kernel_function is 'rbf':
+                        train, test, dkf_test = self.calculate_kernel_matrices_with_missing_mols(
+                        X_train[i], X_test[i], kernel_function, **kernel_params
                         )
 
-                    if self.kernel_function is 'rbf':
-                        mode = 'fit_transform'
-                        train = self.calculate_distance_kernel(mode)
-                        mode = 'transform'
-                        test = self.calculate_distance_kernel(mode)
+                        train = self.calculate_distance_kernel(train)
+                        test = self.calculate_distance_kernel(train, test, dkf_test)
 
-                    train = self.non_linearity(train, self.kernel_function)
-                    test = self.non_linearity(test, self.kernel_function)
+                    else:
+                        train, test = self.calculate_kernel_matrices_with_missing_mols(
+                        X_train[i], X_test[i], kernel_function, **kernel_params
+                        )
+
+                    train = self.non_linearity(train, kernel_function)
+                    test = self.non_linearity(test, kernel_function)
 
                     k_train = k_train * train
                     k_test = k_test * test
             else:
                 for i in X_train:
-                    train, test = self.calculate_kernel_matrices(
-                        X_train[i], X_test[i], **kernel_params
+                    if kernel_function is 'rbf':
+                        train, test, dkf_test = self.calculate_kernel_matrices(
+                        X_train[i], X_test[i], kernel_function, **kernel_params
                         )
 
-                    if self.kernel_function is 'rbf':
-                        mode = 'fit_transform'
-                        train = self.calculate_distance_kernel(mode)
-                        mode = 'transform'
-                        test = self.calculate_distance_kernel(mode)
+                        train = self.calculate_distance_kernel(train)
+                        test = self.calculate_distance_kernel(train, test, dkf_test)
+                        
+                    else:
+                        train, test = self.calculate_kernel_matrices(
+                        X_train[i], X_test[i], kernel_function, **kernel_params
+                        )
 
-                    train = self.non_linearity(train, self.kernel_function)
-                    test = self.non_linearity(test, self.kernel_function)
+                    train = self.non_linearity(train, kernel_function)
+                    test = self.non_linearity(test, kernel_function)
 
                     k_train = k_train * train
                     k_test = k_test * test
@@ -390,14 +447,13 @@ class kernel():
             k_test = None
             for i in X_train:
                 train = self.calculate_kernel_matrices(
-                    X_train[i], None, **kernel_params
+                    X_train[i], None, kernel_function, **kernel_params
                     )
 
-                if self.kernel_function is 'rbf':
-                    mode = 'fit_transform'
-                    train = self.calculate_distance_kernel(mode)
+                if kernel_function is 'rbf':
+                    train = self.calculate_distance_kernel(train)
 
-                train = self.non_linearity(train, self.kernel_function)
+                train = self.non_linearity(train, kernel_function)
 
                 k_train = k_train * train          
             
