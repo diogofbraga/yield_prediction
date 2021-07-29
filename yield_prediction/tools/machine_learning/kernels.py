@@ -405,12 +405,12 @@ class kernel():
             if X_train.isnull().values.any() or X_test.isnull().values.any(): 
                 for i in X_train:
                     if kernel_function is 'rbf':
-                        dkf_train, dkf_test, dkf_test = self.calculate_kernel_matrices_with_missing_mols(
+                        dkf_train, dkf_test, dkf_testtest = self.calculate_kernel_matrices_with_missing_mols(
                         X_train[i], X_test[i], kernel_function, **kernel_params
                         )
 
                         train = self.calculate_distance_kernel(dkf_train)
-                        test = self.calculate_distance_kernel(dkf_train, dkf_test, dkf_test)
+                        test = self.calculate_distance_kernel(dkf_train, dkf_test, dkf_testtest)
 
                     else:
                         train, test = self.calculate_kernel_matrices_with_missing_mols(
@@ -425,12 +425,12 @@ class kernel():
             else:
                 for i in X_train:
                     if kernel_function is 'rbf':
-                        dkf_train, dkf_test, dkf_test = self.calculate_kernel_matrices(
+                        dkf_train, dkf_test, dkf_testtest = self.calculate_kernel_matrices(
                         X_train[i], X_test[i], kernel_function, **kernel_params
                         )
 
                         train = self.calculate_distance_kernel(dkf_train)
-                        test = self.calculate_distance_kernel(dkf_train, dkf_test, dkf_test)
+                        test = self.calculate_distance_kernel(dkf_train, dkf_test, dkf_testtest)
                         
                     else:
                         train, test = self.calculate_kernel_matrices(
