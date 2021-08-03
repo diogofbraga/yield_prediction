@@ -214,12 +214,20 @@ fps =  [
 '''  
 
 graphs_folders = [
-    'WLlinear_2', 'WLlinear_3', 'WLlinear_4', 'WLlinear_5', #'WLlinear_6', 'WLlinear_7', 'WLlinear_8', 'WLlinear_9', 'WLlinear_10', 
-    'WLpolynomial_2', 'WLpolynomial_3', 'WLpolynomial_4', 'WLpolynomial_5', #'WLpolynomial_6', 'WLpolynomial_7', 'WLpolynomial_8', 'WLpolynomial_9', 'WLpolynomial_10',
-    'WLsigmoidlogistic_2', 'WLsigmoidlogistic_3', 'WLsigmoidlogistic_4', 'WLsigmoidlogistic_5',
-    'WLsigmoidhyperbolictangent_2', 'WLsigmoidhyperbolictangent_3', 'WLsigmoidhyperbolictangent_4', 'WLsigmoidhyperbolictangent_5', #'WLsigmoidhyperbolictangent_6', 'WLsigmoidhyperbolictangent_7', 'WLsigmoidhyperbolictangent_8', 'WLsigmoidhyperbolictangent_9', 'WLsigmoidhyperbolictangent_10',
-    'WLsigmoidarctangent_2', 'WLsigmoidarctangent_3', 'WLsigmoidarctangent_4', 'WLsigmoidarctangent_5',
-    'WLrbf_2', 'WLrbf_3', 'WLrbf_4', 'WLrbf_5', #'WLrbf_6', 'WLrbf_7', 'WLrbf_8', 'WLrbf_9', 'WLrbf_10'
+    'WLlinear_2', 'WLlinear_3', #'WLlinear_4', 'WLlinear_5', 'WLlinear_6', 'WLlinear_7', 'WLlinear_8', 'WLlinear_9', 'WLlinear_10', 
+    'WLpolynomial_2', 'WLpolynomial_3', #'WLpolynomial_4', 'WLpolynomial_5', 'WLpolynomial_6', 'WLpolynomial_7', 'WLpolynomial_8', 'WLpolynomial_9', 'WLpolynomial_10',
+    'WLsigmoidlogistic_2', 'WLsigmoidlogistic_3', #'WLsigmoidlogistic_4', 'WLsigmoidlogistic_5',
+    'WLsigmoidhyperbolictangent_2', 'WLsigmoidhyperbolictangent_3', #'WLsigmoidhyperbolictangent_4', 'WLsigmoidhyperbolictangent_5', 'WLsigmoidhyperbolictangent_6', 'WLsigmoidhyperbolictangent_7', 'WLsigmoidhyperbolictangent_8', 'WLsigmoidhyperbolictangent_9', 'WLsigmoidhyperbolictangent_10',
+    'WLsigmoidarctangent_2', 'WLsigmoidarctangent_3', #'WLsigmoidarctangent_4', 'WLsigmoidarctangent_5',
+    'WLgaussian_2', 'WLgaussian_3',
+    'WLexponential_2', 'WLexponential_3',
+    'WLrbf_2', 'WLrbf_3', #'WLrbf_4', 'WLrbf_5', 'WLrbf_6', 'WLrbf_7', 'WLrbf_8', 'WLrbf_9', 'WLrbf_10'
+    'WLlaplacian_2', 'WLlaplacian_3',
+    'WLmultiquadratic_2', 'WLmultiquadratic_3',
+    'WLinversemultiquadratic_2', 'WLinversemultiquadratic_3',
+    'WLpower_2', 'WLpower_3',
+    'WLlog_2', 'WLlog_3',
+    'WLcauchy_2', 'WLcauchy_3'
     ]
 
 dirs = defaultdict()
@@ -322,12 +330,20 @@ descriptor_names=[
 '''
 
 descriptor_names=[
-    'graph_descriptors/WLlinear_2', 'graph_descriptors/WLlinear_3', 'graph_descriptors/WLlinear_4', 'graph_descriptors/WLlinear_5', #'graph_descriptors/WLlinear_6', 'graph_descriptors/WLlinear_7', 'graph_descriptors/WLlinear_8', 'graph_descriptors/WLlinear_9', 'graph_descriptors/WLlinear_10',
-    'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3', 'graph_descriptors/WLpolynomial_4', 'graph_descriptors/WLpolynomial_5', #'graph_descriptors/WLpolynomial_6', 'graph_descriptors/WLpolynomial_7', 'graph_descriptors/WLpolynomial_8', 'graph_descriptors/WLpolynomial_9', 'graph_descriptors/WLpolynomial_10',
-    'graph_descriptors/WLsigmoidlogistic_2', 'graph_descriptors/WLsigmoidlogistic_3', 'graph_descriptors/WLsigmoidlogistic_4', 'graph_descriptors/WLsigmoidlogistic_5',
-    'graph_descriptors/WLsigmoidhyperbolictangent_2', 'graph_descriptors/WLsigmoidhyperbolictangent_3', 'graph_descriptors/WLsigmoidhyperbolictangent_4', 'graph_descriptors/WLsigmoidhyperbolictangent_5', #'graph_descriptors/WLsigmoidhyperbolictangent_6', 'graph_descriptors/WLsigmoidhyperbolictangent_7', 'graph_descriptors/WLsigmoidhyperbolictangent_8', 'graph_descriptors/WLsigmoidhyperbolictangent_9', 'graph_descriptors/WLsigmoidhyperbolictangent_10',
-    'graph_descriptors/WLsigmoidarctangent_2', 'graph_descriptors/WLsigmoidarctangent_3', 'graph_descriptors/WLsigmoidarctangent_4', 'graph_descriptors/WLsigmoidarctangent_5',
-    'graph_descriptors/WLrbf_2', 'graph_descriptors/WLrbf_3', 'graph_descriptors/WLrbf_4', 'graph_descriptors/WLrbf_5', #'graph_descriptors/WLrbf_6', 'graph_descriptors/WLrbf_7', 'graph_descriptors/WLrbf_8', 'graph_descriptors/WLrbf_9', 'graph_descriptors/WLrbf_10'
+    'graph_descriptors/WLlinear_2', 'graph_descriptors/WLlinear_3', #'graph_descriptors/WLlinear_4', 'graph_descriptors/WLlinear_5', 'graph_descriptors/WLlinear_6', 'graph_descriptors/WLlinear_7', 'graph_descriptors/WLlinear_8', 'graph_descriptors/WLlinear_9', 'graph_descriptors/WLlinear_10',
+    'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3', #'graph_descriptors/WLpolynomial_4', 'graph_descriptors/WLpolynomial_5', 'graph_descriptors/WLpolynomial_6', 'graph_descriptors/WLpolynomial_7', 'graph_descriptors/WLpolynomial_8', 'graph_descriptors/WLpolynomial_9', 'graph_descriptors/WLpolynomial_10',
+    'graph_descriptors/WLsigmoidlogistic_2', 'graph_descriptors/WLsigmoidlogistic_3', #'graph_descriptors/WLsigmoidlogistic_4', 'graph_descriptors/WLsigmoidlogistic_5',
+    'graph_descriptors/WLsigmoidhyperbolictangent_2', 'graph_descriptors/WLsigmoidhyperbolictangent_3', #'graph_descriptors/WLsigmoidhyperbolictangent_4', 'graph_descriptors/WLsigmoidhyperbolictangent_5', 'graph_descriptors/WLsigmoidhyperbolictangent_6', 'graph_descriptors/WLsigmoidhyperbolictangent_7', 'graph_descriptors/WLsigmoidhyperbolictangent_8', 'graph_descriptors/WLsigmoidhyperbolictangent_9', 'graph_descriptors/WLsigmoidhyperbolictangent_10',
+    'graph_descriptors/WLsigmoidarctangent_2', 'graph_descriptors/WLsigmoidarctangent_3', #'graph_descriptors/WLsigmoidarctangent_4', 'graph_descriptors/WLsigmoidarctangent_5',
+    'graph_descriptors/WLgaussian_2', 'graph_descriptors/WLgaussian_3',
+    'graph_descriptors/WLexponential_2', 'graph_descriptors/WLexponential_3',
+    'graph_descriptors/WLrbf_2', 'graph_descriptors/WLrbf_3', #'graph_descriptors/WLrbf_4', 'graph_descriptors/WLrbf_5', 'graph_descriptors/WLrbf_6', 'graph_descriptors/WLrbf_7', 'graph_descriptors/WLrbf_8', 'graph_descriptors/WLrbf_9', 'graph_descriptors/WLrbf_10'
+    'graph_descriptors/WLlaplacian_2', 'graph_descriptors/WLlaplacian_3',
+    'graph_descriptors/WLmultiquadratic_2', 'graph_descriptors/WLmultiquadratic_3',
+    'graph_descriptors/WLinversemultiquadratic_2', 'graph_descriptors/WLinversemultiquadratic_3',
+    'graph_descriptors/WLpower_2', 'graph_descriptors/WLpower_3',
+    'graph_descriptors/WLlog_2', 'graph_descriptors/WLlog_3',
+    'graph_descriptors/WLcauchy_2', 'graph_descriptors/WLcauchy_3',
     ]
 
 test_types=['out_of_sample']

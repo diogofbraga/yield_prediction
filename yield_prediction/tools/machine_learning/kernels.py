@@ -372,11 +372,11 @@ class kernel():
             bias = 1
             K = 1 / np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
         
-        elif kernel_function is 'power': # Problems with the division
+        elif kernel_function is 'power':
             degree = 2
             K = -(np.abs(K) ** degree)
 
-        elif kernel_function is 'log': # Problems with the division
+        elif kernel_function is 'log':
             degree = 2
             K = -np.log((np.abs(K) ** degree) + 1)
 

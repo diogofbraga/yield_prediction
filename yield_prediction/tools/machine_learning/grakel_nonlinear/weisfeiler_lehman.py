@@ -325,7 +325,7 @@ class WeisfeilerLehman(Kernel):
         elif kernel_function is 'rationalquadratic': # Return a matrix with only 0s
             standard_deviation = float(1/K.shape[1])
             bias = 0
-            K = 1 - (((np.abs(D)) ** 2)/((np.abs(K)) ** 2) + bias)
+            K = 1 - (((np.abs(K)) ** 2)/((np.abs(K)) ** 2) + bias)
 
         elif kernel_function is 'multiquadratic':
             bias = 1
