@@ -15,6 +15,8 @@ import sklearn.metrics.pairwise as sklearn_kernels
 from grakel.kernels.weisfeiler_lehman import WeisfeilerLehman
 from grakel.kernels.vertex_histogram import VertexHistogram
 
+distance_based_functions = ['gaussian', 'exponential', 'rbf', 'laplacian', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy']
+
 class kernel():
     """A class that defines and calculates kernels using GraKel."""
     
@@ -99,16 +101,16 @@ class kernel():
         """
         self.define_kernel(normalize=True, **kernel_params)
         
-        if X_test is not None and kernel_function is 'rbf':
+        if X_test is not None and kernel_function in distance_based_functions:
             self.fit_and_transform(X_train, X_test)
-        elif kernel_function is not 'rbf':
+        elif kernel_function not in distance_based_functions:
             self.fit_and_transform(X_train)
 
         if X_test is not None:
             self.transform_data(X_test)
     
         k_train = self.fitted_kernel
-        if X_test is not None and kernel_function is 'rbf':
+        if X_test is not None and kernel_function in distance_based_functions:
             k_test = self.transformed_kernel
             dkf_test = self.dkf_test
             return k_train, k_test, dkf_test
@@ -201,12 +203,12 @@ class kernel():
             len_reduced_X_test = len(reduced_X_test)
             
             # Calculate kernel matrix on non-missing molecules
-            if kernel_function is 'rbf': # dkf_test
+            if kernel_function in distance_based_functions: # dkf_test
                 reduced_dkf_test = self.kernel.fit_transform(reduced_X_test)
             reduced_k_test = self.kernel.transform(reduced_X_test)
             
             # new_kernel(mol_i, mol_j) = base_kernel(mol_i, mol_j) + 1
-            if kernel_function is 'rbf': # dkf_test
+            if kernel_function in distance_based_functions: # dkf_test
                 np.add(
                     reduced_dkf_test, 
                     np.ones((len_reduced_X_test, len_reduced_X_test)), 
@@ -219,7 +221,7 @@ class kernel():
                 ) 
         
             # missing molecules have value 1 or 2, initialise with ones
-            if kernel_function is 'rbf': # dkf_test
+            if kernel_function in distance_based_functions: # dkf_test
                 dkf_test = np.ones((len_X_test, len_X_test)) 
 
                 reduced_index_dkf_test = present_mol_indices_X_test[
@@ -251,7 +253,7 @@ class kernel():
                         
         else:
             print('no nan in X_test')
-            if kernel_function is 'rbf': # dkf_test
+            if kernel_function in distance_based_functions: # dkf_test
                 reduced_dkf_test = self.kernel.fit_transform(X_test)
 
                 len_X_test = len(X_test)
@@ -289,7 +291,7 @@ class kernel():
                 k_test[reduced_index_X_test[i], reduced_index_X_train] \
                     = reduced_k_test[i, :]
     
-        if kernel_function is 'rbf':
+        if kernel_function in distance_based_functions:
             return k_train, k_test, dkf_test
         else:
             return k_train, k_test
@@ -404,7 +406,7 @@ class kernel():
             
             if X_train.isnull().values.any() or X_test.isnull().values.any(): 
                 for i in X_train:
-                    if kernel_function is 'rbf':
+                    if kernel_function in distance_based_functions:
                         dkf_train, dkf_test, dkf_testtest = self.calculate_kernel_matrices_with_missing_mols(
                         X_train[i], X_test[i], kernel_function, **kernel_params
                         )
@@ -424,7 +426,7 @@ class kernel():
                     k_test = k_test * test
             else:
                 for i in X_train:
-                    if kernel_function is 'rbf':
+                    if kernel_function in distance_based_functions:
                         dkf_train, dkf_test, dkf_testtest = self.calculate_kernel_matrices(
                         X_train[i], X_test[i], kernel_function, **kernel_params
                         )
@@ -450,7 +452,7 @@ class kernel():
                     X_train[i], None, kernel_function, **kernel_params
                     )
 
-                if kernel_function is 'rbf':
+                if kernel_function in distance_based_functions:
                     train = self.calculate_distance_kernel(train)
 
                 train = self.non_linearity(train, kernel_function)
