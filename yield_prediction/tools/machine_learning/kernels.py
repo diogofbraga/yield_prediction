@@ -344,46 +344,38 @@ class kernel():
             K = np.arctan(scale * K + bias)
 
         elif kernel_function is 'gaussian':
-            sigma = float(1/K.shape[1])
+            sigma = 1/K.shape[1]
             variance = np.power(sigma,2)
-            K = np.exp(-((np.abs(K)) ** 2)/(2*variance))
+            K = np.exp(np.float128(-((np.abs(K)) ** 2)/(2*variance)))
 
         elif kernel_function is 'exponential':
-            sigma = float(1/K.shape[1])
+            sigma = 1/K.shape[1]
             variance = np.power(sigma,2)
-            K = np.exp(-(np.abs(K))/(2*variance))
+            K = np.exp(np.float128(-(np.abs(K))/(2*variance)))
         
         elif kernel_function is 'rbf':
-            gamma = float(1/K.shape[1])
-            K = np.exp(-gamma * (np.abs(K)) ** 2)
+            gamma = 1/K.shape[1]
+            K = np.exp(np.float128(-gamma * (np.abs(K)) ** 2))
         
         elif kernel_function is 'laplacian':
-            standard_deviation = float(1/K.shape[1])
-            K = np.exp(-(np.abs(K))/standard_deviation)
+            standard_deviation = 1/K.shape[1]
+            K = np.exp(np.float128(-(np.abs(K))/standard_deviation))
         
-        elif kernel_function is 'rationalquadratic': # Return a matrix with only 0s
-            standard_deviation = float(1/K.shape[1])
-            bias = 0
-            K = 1 - (((np.abs(K)) ** 2)/((np.abs(K)) ** 2) + bias)
+        elif kernel_function is 'rationalquadratic':
+            standard_deviation = 1/K.shape[1]
+            bias = 1
+            K = 1 - (((np.abs(K)) ** 2)/((np.abs(K)) ** 2 + bias))
 
-        elif kernel_function is 'multiquadratic':
+        elif kernel_function is 'multiquadratic': # Not beneficial
             bias = 1
             K = np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
 
         elif kernel_function is 'inversemultiquadratic':
             bias = 1
             K = 1 / np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
-        
-        elif kernel_function is 'power':
-            degree = 2
-            K = -(np.abs(K) ** degree)
-
-        elif kernel_function is 'log':
-            degree = 2
-            K = -np.log((np.abs(K) ** degree) + 1)
 
         elif kernel_function is 'cauchy':
-            sigma = float(1/K.shape[1])
+            sigma = 1/K.shape[1]
             variance = np.power(sigma,2)
             K = 1 / (1 + ((np.abs(K)) ** 2)/variance)
 

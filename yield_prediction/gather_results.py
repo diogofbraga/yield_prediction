@@ -223,10 +223,9 @@ graphs_folders = [
     'WLexponential_2', 'WLexponential_3', 'WLexponential_4', 'WLexponential_5', 'WLexponential_6',
     'WLrbf_2', 'WLrbf_3', 'WLrbf_4', 'WLrbf_5', 'WLrbf_6', #'WLrbf_7', 'WLrbf_8', 'WLrbf_9', 'WLrbf_10'
     'WLlaplacian_2', 'WLlaplacian_3', 'WLlaplacian_4', 'WLlaplacian_5', 'WLlaplacian_6',
+    'WLrationalquadratic_2', 'WLrationalquadratic_3', 'WLrationalquadratic_4', 'WLrationalquadratic_5', 'WLrationalquadratic_6',
     'WLmultiquadratic_2', 'WLmultiquadratic_3', 'WLmultiquadratic_4', 'WLmultiquadratic_5', 'WLmultiquadratic_6',
     'WLinversemultiquadratic_2', 'WLinversemultiquadratic_3', 'WLinversemultiquadratic_4', 'WLinversemultiquadratic_5', 'WLinversemultiquadratic_6',
-    'WLpower_2', 'WLpower_3', 'WLpower_4', 'WLpower_5', 'WLpower_6',
-    'WLlog_2', 'WLlog_3', 'WLlog_4', 'WLlog_5', 'WLlog_6',
     'WLcauchy_2', 'WLcauchy_3', 'WLcauchy_4', 'WLcauchy_5', 'WLcauchy_6'
     ]
 
@@ -339,10 +338,9 @@ descriptor_names=[
     'graph_descriptors/WLexponential_2', 'graph_descriptors/WLexponential_3', 'graph_descriptors/WLexponential_4', 'graph_descriptors/WLexponential_5', 'graph_descriptors/WLexponential_6',
     'graph_descriptors/WLrbf_2', 'graph_descriptors/WLrbf_3', 'graph_descriptors/WLrbf_4', 'graph_descriptors/WLrbf_5', 'graph_descriptors/WLrbf_6', #'graph_descriptors/WLrbf_7', 'graph_descriptors/WLrbf_8', 'graph_descriptors/WLrbf_9', 'graph_descriptors/WLrbf_10'
     'graph_descriptors/WLlaplacian_2', 'graph_descriptors/WLlaplacian_3', 'graph_descriptors/WLlaplacian_4', 'graph_descriptors/WLlaplacian_5', 'graph_descriptors/WLlaplacian_6',
+    'graph_descriptors/WLrationalquadratic_2', 'graph_descriptors/WLrationalquadratic_3', 'graph_descriptors/WLrationalquadratic_4', 'graph_descriptors/WLrationalquadratic_5', 'graph_descriptors/WLrationalquadratic_6',
     'graph_descriptors/WLmultiquadratic_2', 'graph_descriptors/WLmultiquadratic_3', 'graph_descriptors/WLmultiquadratic_4', 'graph_descriptors/WLmultiquadratic_5', 'graph_descriptors/WLmultiquadratic_6',
     'graph_descriptors/WLinversemultiquadratic_2', 'graph_descriptors/WLinversemultiquadratic_3', 'graph_descriptors/WLinversemultiquadratic_4', 'graph_descriptors/WLinversemultiquadratic_5', 'graph_descriptors/WLinversemultiquadratic_6',
-    'graph_descriptors/WLpower_2', 'graph_descriptors/WLpower_3', 'graph_descriptors/WLpower_4', 'graph_descriptors/WLpower_5', 'graph_descriptors/WLpower_6',
-    'graph_descriptors/WLlog_2', 'graph_descriptors/WLlog_3', 'graph_descriptors/WLlog_4', 'graph_descriptors/WLlog_5', 'graph_descriptors/WLlog_6',
     'graph_descriptors/WLcauchy_2', 'graph_descriptors/WLcauchy_3', 'graph_descriptors/WLcauchy_4', 'graph_descriptors/WLcauchy_5', 'graph_descriptors/WLcauchy_6'
     ]
 
