@@ -104,8 +104,11 @@ class machine_learning():
         if X_test is None:
             X_test = self.X_test
             
+
+        if 'kernel_name' in kernel_params:
+            kernel_name = kernel_params.pop('kernel_name', None)
         # Create graph kernel matricies for the train and test set.
-        graph_kernel = kernel('WeisfeilerLehman')
+        graph_kernel = kernel(kernel_name)
         
         k_train, k_test = graph_kernel.multiple_descriptor_types(
             X_train, X_test, n_jobs=n_jobs, **kernel_params)

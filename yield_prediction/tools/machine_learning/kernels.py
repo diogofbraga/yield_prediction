@@ -37,20 +37,26 @@ class kernel():
         -------
         None.
         """
-        base_kernel = self.base_kernel
-        if base_kernel is None:
-            base_kernel = 'VertexHistogram'
-        k = getattr(kernels, self.kernel_name)
-        k_base = getattr(kernels, base_kernel)
-        #self.kernel = k(base_kernel=k_base, *args, **kwargs)
-        self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)
+        if self.kernel_name is 'WeisfeilerLehman':
+            base_kernel = self.base_kernel
+            if base_kernel is None:
+                base_kernel = 'VertexHistogram'
+            k = getattr(kernels, self.kernel_name)
+            k_base = getattr(kernels, base_kernel)
+            #self.kernel = k(base_kernel=k_base, *args, **kwargs)
+            self.kernel = k(base_graph_kernel=k_base, *args, **kwargs)
+        else:
+            k = getattr(kernels, self.kernel_name)
+            self.kernel = k(*args, **kwargs)
+
+        print(self.kernel)
         
-    def fit_and_transform(self, X_train, X_test=None):
+    def fit_and_transform(self, X_train, X_test=None, kernel_function=None):
         """
         Fit and transform on the same dataset. Calculates X_fit by X_fit 
         kernel matrix.
         """
-        if X_test is not None:
+        if X_test is not None and kernel_function in distance_based_functions:
             self.dkf_test = self.kernel.fit_transform(X_test)
         self.fitted_kernel = self.kernel.fit_transform(X_train)
     
@@ -102,7 +108,7 @@ class kernel():
         self.define_kernel(normalize=True, **kernel_params)
         
         if X_test is not None and kernel_function in distance_based_functions:
-            self.fit_and_transform(X_train, X_test)
+            self.fit_and_transform(X_train, X_test, kernel_function)
         elif kernel_function not in distance_based_functions:
             self.fit_and_transform(X_train)
 
@@ -343,12 +349,12 @@ class kernel():
             bias = 0
             K = np.arctan(scale * K + bias)
 
-        elif kernel_function is 'gaussian':
+        elif kernel_function is 'gaussian': # Not working
             sigma = 1/K.shape[1]
             variance = np.power(sigma,2)
             K = np.exp(np.float128(-((np.abs(K)) ** 2)/(2*variance)))
 
-        elif kernel_function is 'exponential':
+        elif kernel_function is 'exponential': # Not working
             sigma = 1/K.shape[1]
             variance = np.power(sigma,2)
             K = np.exp(np.float128(-(np.abs(K))/(2*variance)))
@@ -357,11 +363,11 @@ class kernel():
             gamma = 1/K.shape[1]
             K = np.exp(np.float128(-gamma * (np.abs(K)) ** 2))
         
-        elif kernel_function is 'laplacian':
+        elif kernel_function is 'laplacian': # Not working
             standard_deviation = 1/K.shape[1]
             K = np.exp(np.float128(-(np.abs(K))/standard_deviation))
         
-        elif kernel_function is 'rationalquadratic':
+        elif kernel_function is 'rationalquadratic': # Not working
             standard_deviation = 1/K.shape[1]
             bias = 1
             K = 1 - (((np.abs(K)) ** 2)/((np.abs(K)) ** 2 + bias))
@@ -374,7 +380,7 @@ class kernel():
             bias = 1
             K = 1 / np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
 
-        elif kernel_function is 'cauchy':
+        elif kernel_function is 'cauchy': # Not working
             sigma = 1/K.shape[1]
             variance = np.power(sigma,2)
             K = 1 / (1 + ((np.abs(K)) ** 2)/variance)

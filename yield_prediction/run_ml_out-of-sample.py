@@ -113,18 +113,28 @@ def main():
     info['one-hot']['kwargs'] = None
     '''
     graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles)
-    wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'cauchy'] # 'linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
-    for i in wl_kernel_functions:
-        for n in np.arange(2, 7): # 2, 11
-            #print("wl_kernel_functions", i, n)
-            info['graphs_WL{}_{}'.format(i, n)] = defaultdict()
-            info['graphs_WL{}_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)
-            info['graphs_WL{}_{}'.format(i, n)]['X_type'] = 'graphs'
-            info['graphs_WL{}_{}'.format(i, n)]['model_names'] = [
-                'SVR - Precomputed Kernel'
-                ]
-            info['graphs_WL{}_{}'.format(i, n)]['X'] = graphs
-            info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'n_iter': int(n), 'kernel_function': i}
+    #wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'cauchy'] # 'linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
+    #for i in wl_kernel_functions:
+    #    for n in np.arange(2, 7): # 2, 11
+    #        #print("wl_kernel_functions", i, n)
+    #        info['graphs_WL{}_{}'.format(i, n)] = defaultdict()
+    #        info['graphs_WL{}_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)
+    #        info['graphs_WL{}_{}'.format(i, n)]['X_type'] = 'graphs'
+    #        info['graphs_WL{}_{}'.format(i, n)]['model_names'] = [
+    #            'SVR - Precomputed Kernel'
+    #            ]
+    #        info['graphs_WL{}_{}'.format(i, n)]['X'] = graphs
+    #        info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i}
+
+    info['graphs_WL_randomwalk'] = defaultdict()
+    info['graphs_WL_randomwalk']['dir'] = 'graph_descriptors/WL_randomwalk'
+    info['graphs_WL_randomwalk']['X_type'] = 'graphs'
+    info['graphs_WL_randomwalk']['model_names'] = [
+        'SVR - Precomputed Kernel'
+        ]
+    info['graphs_WL_randomwalk']['X'] = graphs
+    info['graphs_WL_randomwalk']['kwargs'] = {'kernel_name':'RandomWalkLabeled', 'verbose': True, 'kernel_function': None}
+
     '''
     for fp, fp_type, fps_kw in zip(
             [
