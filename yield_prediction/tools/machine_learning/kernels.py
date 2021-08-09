@@ -320,20 +320,20 @@ class kernel():
         return abs(D)
     
         
-    def non_linearity(self, K, kernel_function, h0=None, h1=None):
+    def non_linearity(self, K, kernel_function, h0=None, h1=None , h2=None):
         
         print("Kernel function:", kernel_function)
-        print("Kernel matrix before non-linearity: \n", K)
+        #print("Kernel matrix before non-linearity: \n", K)
 
-        print("h0:", h0, "h1:", h1)
+        print("h0:", h0, "h1:", h1, "h2:", h2)
 
         if kernel_function is 'linear':
             pass
         
         elif kernel_function is 'polynomial':
-            scale = 1
-            degree = h0
-            bias = h1
+            scale = h0
+            degree = h1
+            bias = h2
             K = (scale * K + bias) ** degree
         
         elif kernel_function is 'sigmoidlogistic':
@@ -374,11 +374,11 @@ class kernel():
             K = 1 - (((np.abs(K)) ** 2)/((np.abs(K)) ** 2 + bias))
 
         elif kernel_function is 'multiquadratic': # Not beneficial
-            bias = h0
+            bias = 1
             K = np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
 
         elif kernel_function is 'inversemultiquadratic':
-            bias = 1
+            bias = h0
             K = 1 / np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
 
         elif kernel_function is 'cauchy': # Not working
@@ -386,7 +386,7 @@ class kernel():
             variance = np.power(sigma,2)
             K = 1 / (1 + ((np.abs(K)) ** 2)/variance)
 
-        print("Kernel matrix after non-linearity: \n", K)
+        #print("Kernel matrix after non-linearity: \n", K)
 
         return K
 
@@ -396,6 +396,7 @@ class kernel():
 
         h0 = None
         h1 = None
+        h2 = None
 
         if 'kernel_name' in kernel_params:
             kernel_params.pop('kernel_name', None)
@@ -408,6 +409,9 @@ class kernel():
 
         if 'h1' in kernel_params:
             h1 = kernel_params.pop('h1', None)
+
+        if 'h2' in kernel_params:
+            h2 = kernel_params.pop('h2', None)
 
         if 'n_iter' in kernel_params:
             print("Iterations:", kernel_params['n_iter'])
@@ -430,8 +434,8 @@ class kernel():
                         X_train[i], X_test[i], kernel_function, **kernel_params
                         )
 
-                    train = self.non_linearity(train, kernel_function, h0, h1)
-                    test = self.non_linearity(test, kernel_function, h0, h1)
+                    train = self.non_linearity(train, kernel_function, h0, h1, h2)
+                    test = self.non_linearity(test, kernel_function, h0, h1, h2)
 
                     k_train = k_train * train
                     k_test = k_test * test
@@ -450,8 +454,8 @@ class kernel():
                         X_train[i], X_test[i], kernel_function, **kernel_params
                         )
 
-                    train = self.non_linearity(train, kernel_function, h0, h1)
-                    test = self.non_linearity(test, kernel_function, h0, h1)
+                    train = self.non_linearity(train, kernel_function, h0, h1, h2)
+                    test = self.non_linearity(test, kernel_function, h0, h1, h2)
 
                     k_train = k_train * train
                     k_test = k_test * test
@@ -466,7 +470,7 @@ class kernel():
                 if kernel_function in distance_based_functions:
                     train = self.calculate_distance_kernel(train)
 
-                train = self.non_linearity(train, kernel_function, h0, h1)
+                train = self.non_linearity(train, kernel_function, h0, h1, h2)
 
                 k_train = k_train * train          
             

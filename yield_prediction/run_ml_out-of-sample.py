@@ -117,6 +117,7 @@ def main():
     for i in wl_kernel_functions:
         hyperparameters = {}
         if i is 'polynomial':
+            hyperparameters['scale'] = [1, 2, 5]
             hyperparameters['degree'] = [2, 3, 5, 10]
             hyperparameters['bias'] = [0, 1]
         elif i is 'sigmoidlogistic':
@@ -135,6 +136,10 @@ def main():
         elif len(hyperp_keys) == 2:
             values0 = hyperparameters[hyperp_keys[0]]
             values1 = hyperparameters[hyperp_keys[1]]
+        elif len(hyperp_keys) == 3:
+            values0 = hyperparameters[hyperp_keys[0]]
+            values1 = hyperparameters[hyperp_keys[1]]
+            values2 = hyperparameters[hyperp_keys[2]]
 
         if len(hyperp_keys) == 0:
             for n in np.arange(2, 7): # 2, 11
@@ -178,6 +183,23 @@ def main():
                             ]
                         info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X'] = graphs
                         info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0, 'h1': h1}
+
+        elif len(hyperp_keys) == 3:
+            for h0 in values0:
+                for h1 in values1:
+                    for h2 in values2:
+                        hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0) + '_' + str(hyperp_keys[1]) + '_' + str(h1) + '_' + str(hyperp_keys[2]) + '_' + str(h2)
+                        print(hyperp_path)
+                        for n in np.arange(2, 7): # 2, 11
+                            #print("wl_kernel_functions", i, n)
+                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path] = defaultdict()
+                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)+hyperp_path
+                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
+                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['model_names'] = [
+                                'SVR - Precomputed Kernel'
+                                ]
+                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X'] = graphs
+                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0, 'h1': h1, 'h2': h2}
                 
 
     '''
