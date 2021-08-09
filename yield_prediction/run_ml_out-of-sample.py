@@ -113,19 +113,74 @@ def main():
     info['one-hot']['kwargs'] = None
     '''
     graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles)
-    #wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'cauchy'] # 'linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
-    #for i in wl_kernel_functions:
-    #    for n in np.arange(2, 7): # 2, 11
-    #        #print("wl_kernel_functions", i, n)
-    #        info['graphs_WL{}_{}'.format(i, n)] = defaultdict()
-    #        info['graphs_WL{}_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)
-    #        info['graphs_WL{}_{}'.format(i, n)]['X_type'] = 'graphs'
-    #        info['graphs_WL{}_{}'.format(i, n)]['model_names'] = [
-    #            'SVR - Precomputed Kernel'
-    #            ]
-    #        info['graphs_WL{}_{}'.format(i, n)]['X'] = graphs
-    #        info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i}
+    wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'rbf', 'inversemultiquadratic'] # 'linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
+    for i in wl_kernel_functions:
+        hyperparameters = {}
+        if i is 'polynomial':
+            hyperparameters['degree'] = [2, 3, 5, 10]
+            hyperparameters['bias'] = [0, 1]
+        elif i is 'sigmoidlogistic':
+            hyperparameters['scale'] = [1, 2]
+        elif i is 'sigmoidhyperbolictangent' or i is 'sigmoidarctangent':
+            hyperparameters['scale'] = [1, 2]
+            hyperparameters['bias'] = [0, 1]
+        elif i is 'rbf':
+            hyperparameters['gamma'] = [1, 2, 5, 10, 100, 1000]
+        elif i is 'inversemultiquadratic':
+            hyperparameters['bias'] = [0, 1, 2]
 
+        hyperp_keys = list(hyperparameters.keys())
+        if len(hyperp_keys) == 1:
+            values0 = hyperparameters[hyperp_keys[0]]
+        elif len(hyperp_keys) == 2:
+            values0 = hyperparameters[hyperp_keys[0]]
+            values1 = hyperparameters[hyperp_keys[1]]
+
+        if len(hyperp_keys) == 0:
+            for n in np.arange(2, 7): # 2, 11
+                #print("wl_kernel_functions", i, n)
+                info['graphs_WL{}_{}'.format(i, n)] = defaultdict()
+                info['graphs_WL{}_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)
+                info['graphs_WL{}_{}'.format(i, n)]['X_type'] = 'graphs'
+                info['graphs_WL{}_{}'.format(i, n)]['model_names'] = [
+                    'SVR - Precomputed Kernel'
+                    ]
+                info['graphs_WL{}_{}'.format(i, n)]['X'] = graphs
+                info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i}
+
+        elif len(hyperp_keys) == 1:
+            for h0 in values0:
+                hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0)
+                print(hyperp_path)
+                for n in np.arange(2, 7): # 2, 11
+                    #print("wl_kernel_functions", i, n)
+                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path] = defaultdict()
+                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)+hyperp_path
+                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
+                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['model_names'] = [
+                        'SVR - Precomputed Kernel'
+                        ]
+                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X'] = graphs
+                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0}
+
+        elif len(hyperp_keys) == 2:
+            for h0 in values0:
+                for h1 in values1:
+                    hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0) + '_' + str(hyperp_keys[1]) + '_' + str(h1)
+                    print(hyperp_path)
+                    for n in np.arange(2, 7): # 2, 11
+                        #print("wl_kernel_functions", i, n)
+                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path] = defaultdict()
+                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)+hyperp_path
+                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
+                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['model_names'] = [
+                            'SVR - Precomputed Kernel'
+                            ]
+                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X'] = graphs
+                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0, 'h1': h1}
+                
+
+    '''
     info['graphs_WL_randomwalk'] = defaultdict()
     info['graphs_WL_randomwalk']['dir'] = 'graph_descriptors/WL_randomwalk'
     info['graphs_WL_randomwalk']['X_type'] = 'graphs'
@@ -134,6 +189,7 @@ def main():
         ]
     info['graphs_WL_randomwalk']['X'] = graphs
     info['graphs_WL_randomwalk']['kwargs'] = {'kernel_name':'RandomWalkLabeled', 'verbose': True, 'kernel_function': None}
+    '''
 
     '''
     for fp, fp_type, fps_kw in zip(
@@ -305,7 +361,7 @@ def main():
                 rxn_component=rxn_component, 
                 saveas='./results/{}/{}/{}/{}'.format(
                     info_d['dir'], test_name, rxn_component, name),
-                save_plots=False,
+                save_plots=True,
                 save_table=True,
                 save_model=False,
                 kwargs=info_d['kwargs']
@@ -353,7 +409,7 @@ def main():
                 rxn_component=rxn_component, 
                 saveas='./results/{}/{}/{}/{}'.format(
                     info_d['dir'], test_name, rxn_component, name),
-                save_plots=False,
+                save_plots=True,
                 save_table=True,
                 save_model=False,
                 kwargs=info_d['kwargs']
@@ -379,7 +435,7 @@ def main():
                     rxn_component=rxn_component, 
                     saveas='./results/{}/{}/{}/{}'.format(
                         info_d['dir'], test_name, rxn_component, 'LOO_{}'.format(mol)),
-                    save_plots=False,
+                    save_plots=True,
                     save_table=True,
                     save_model=False,
                     kwargs=info_d['kwargs']

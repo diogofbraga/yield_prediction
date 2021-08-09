@@ -48,8 +48,7 @@ class kernel():
         else:
             k = getattr(kernels, self.kernel_name)
             self.kernel = k(*args, **kwargs)
-
-        print(self.kernel)
+            
         
     def fit_and_transform(self, X_train, X_test=None, kernel_function=None):
         """
@@ -321,32 +320,34 @@ class kernel():
         return abs(D)
     
         
-    def non_linearity(self, K, kernel_function):
+    def non_linearity(self, K, kernel_function, h0=None, h1=None):
         
         print("Kernel function:", kernel_function)
-        #print("Kernel matrix before non-linearity: \n", K)
+        print("Kernel matrix before non-linearity: \n", K)
+
+        print("h0:", h0, "h1:", h1)
 
         if kernel_function is 'linear':
             pass
         
         elif kernel_function is 'polynomial':
             scale = 1
-            bias = 0
-            degree = 2
+            degree = h0
+            bias = h1
             K = (scale * K + bias) ** degree
         
         elif kernel_function is 'sigmoidlogistic':
-            scale = 1
+            scale = h0
             K = 1 / (1 + np.exp(-K * scale))
 
         elif kernel_function is 'sigmoidhyperbolictangent':
-            scale = 1
-            bias = 0
+            scale = h0
+            bias = h1
             K = np.tanh(scale * K + bias)
 
         elif kernel_function is 'sigmoidarctangent':
-            scale = 1
-            bias = 0
+            scale = h0
+            bias = h1
             K = np.arctan(scale * K + bias)
 
         elif kernel_function is 'gaussian': # Not working
@@ -360,7 +361,7 @@ class kernel():
             K = np.exp(np.float128(-(np.abs(K))/(2*variance)))
         
         elif kernel_function is 'rbf':
-            gamma = 1/K.shape[1]
+            gamma = h0/K.shape[1]
             K = np.exp(np.float128(-gamma * (np.abs(K)) ** 2))
         
         elif kernel_function is 'laplacian': # Not working
@@ -373,7 +374,7 @@ class kernel():
             K = 1 - (((np.abs(K)) ** 2)/((np.abs(K)) ** 2 + bias))
 
         elif kernel_function is 'multiquadratic': # Not beneficial
-            bias = 1
+            bias = h0
             K = np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
 
         elif kernel_function is 'inversemultiquadratic':
@@ -385,7 +386,7 @@ class kernel():
             variance = np.power(sigma,2)
             K = 1 / (1 + ((np.abs(K)) ** 2)/variance)
 
-        #print("Kernel matrix after non-linearity: \n", K)
+        print("Kernel matrix after non-linearity: \n", K)
 
         return K
 
@@ -393,11 +394,23 @@ class kernel():
     def multiple_descriptor_types(self, X_train, X_test, **kernel_params):
         k_train = 1
 
+        h0 = None
+        h1 = None
+
+        if 'kernel_name' in kernel_params:
+            kernel_params.pop('kernel_name', None)
+
         if 'kernel_function' in kernel_params:
             kernel_function = kernel_params.pop('kernel_function', None)
 
+        if 'h0' in kernel_params:
+            h0 = kernel_params.pop('h0', None)
+
+        if 'h1' in kernel_params:
+            h1 = kernel_params.pop('h1', None)
+
         if 'n_iter' in kernel_params:
-            print(kernel_params['n_iter'])
+            print("Iterations:", kernel_params['n_iter'])
 
         if X_test is not None:
             k_test = 1
@@ -417,8 +430,8 @@ class kernel():
                         X_train[i], X_test[i], kernel_function, **kernel_params
                         )
 
-                    train = self.non_linearity(train, kernel_function)
-                    test = self.non_linearity(test, kernel_function)
+                    train = self.non_linearity(train, kernel_function, h0, h1)
+                    test = self.non_linearity(test, kernel_function, h0, h1)
 
                     k_train = k_train * train
                     k_test = k_test * test
@@ -437,8 +450,8 @@ class kernel():
                         X_train[i], X_test[i], kernel_function, **kernel_params
                         )
 
-                    train = self.non_linearity(train, kernel_function)
-                    test = self.non_linearity(test, kernel_function)
+                    train = self.non_linearity(train, kernel_function, h0, h1)
+                    test = self.non_linearity(test, kernel_function, h0, h1)
 
                     k_train = k_train * train
                     k_test = k_test * test
@@ -453,7 +466,7 @@ class kernel():
                 if kernel_function in distance_based_functions:
                     train = self.calculate_distance_kernel(train)
 
-                train = self.non_linearity(train, kernel_function)
+                train = self.non_linearity(train, kernel_function, h0, h1)
 
                 k_train = k_train * train          
             
