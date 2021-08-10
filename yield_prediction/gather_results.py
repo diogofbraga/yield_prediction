@@ -224,10 +224,7 @@ for i in wl_kernel_functions:
             hyperparameters['bias'] = [0]
         elif i is 'sigmoidlogistic':
             hyperparameters['scale'] = [1, 2]
-        elif i is 'sigmoidhyperbolictangent':
-            hyperparameters['scale'] = [1, 2]
-            hyperparameters['bias'] = [1]
-        elif i is 'sigmoidarctangent':
+        elif i is 'sigmoidhyperbolictangent' or i is 'sigmoidarctangent':
             hyperparameters['scale'] = [1, 2]
             hyperparameters['bias'] = [0, 1]
         elif i is 'rbf':
@@ -544,7 +541,7 @@ for test_type in training_scores.keys():
                     ]
                 ], axis=1)
             training_scores_subset[test_name] = training_scores_subset[test_name].sort_values(
-                ['scores'], 
+                ['training_scores'], 
                 axis='columns'
                 )            
     
