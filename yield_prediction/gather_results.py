@@ -295,6 +295,16 @@ scores = get_results(
         }
     )
 
+# Training Scores Benchmarking
+training_scores = get_results(
+    descriptor_names=[dirs[k] for k in dirs.keys()],
+    test_types=['out_of_sample'],
+    test_names={
+        'out_of_sample': ['additive', 'aryl_halide', 'base', 'ligand'],
+        },
+    sheet_name='training_scores'
+    )
+
 for test_type in scores.keys():
     if test_type == 'out_of_sample':
         scores_mean = defaultdict()
@@ -329,6 +339,44 @@ for test_type in scores.keys():
         for test_name, results in scores[test_type].items():
             results.to_excel(writer, sheet_name=test_name)
         for test_name, results in scores_mean.items():
+            results.to_excel(writer, sheet_name='{}_mean'.format(test_name))
+        writer.save()
+
+# Training Scores Benchmarking
+for test_type in training_scores.keys():
+    if test_type == 'out_of_sample':
+        training_scores_mean = defaultdict()
+        for test_name in training_scores[test_type].keys():
+            if isinstance(training_scores[test_type][test_name], pd.DataFrame):
+                training_scores_mean[test_name] = pd.DataFrame()
+                
+                training_scores_test_set = training_scores[test_type][test_name].unstack('Test Set').stack(0)
+                
+                training_scores_mean[test_name]['Mean'] = training_scores_test_set.mean(1)
+                training_scores_mean[test_name]['Std'] = training_scores_test_set.std(1)
+                
+                training_scores_mean[test_name] = training_scores_mean[test_name].unstack(2)
+                training_scores_mean[test_name] = training_scores_mean[test_name].reorder_levels(
+                    [1,0], axis='columns'
+                    ).sort_index(
+                        axis='columns', level=[0,1]
+                        )
+                training_scores_mean[test_name].index = training_scores_mean[test_name].index.rename('Model', -1)
+                training_scores_mean[test_name] = training_scores_mean[test_name].reset_index(
+                    ).set_index(['Test', 'Descriptor', 'Model']
+                                ).sort_values(['Test', 'Descriptor', 'Model'])
+                
+                training_scores[test_type][test_name] = training_scores[test_type][test_name].unstack().stack(0)
+                training_scores[test_type][test_name].index = training_scores[test_type][test_name].index.rename('Model', -1)
+                training_scores[test_type][test_name] = training_scores[test_type][test_name].reset_index(
+                    ).set_index(['Test', 'Descriptor', 'Model', 'Test Set']
+                                ).sort_values(['Test', 'Descriptor', 'Model', 'Test Set'])
+
+        
+        writer = pd.ExcelWriter('results/training_out_of_sample_results.xlsx')
+        for test_name, results in training_scores[test_type].items():
+            results.to_excel(writer, sheet_name=test_name)
+        for test_name, results in training_scores_mean.items():
             results.to_excel(writer, sheet_name='{}_mean'.format(test_name))
         writer.save()
 
@@ -463,6 +511,45 @@ for test_type in scores.keys():
     
         writer = pd.ExcelWriter('results/main_text_scores.xlsx')
         for test_name, results in scores_subset.items():
+            results.to_excel(writer, sheet_name=test_name)
+        writer.save()
+
+# Training Scores Benchmarking
+for test_type in training_scores.keys():
+    if test_type == 'out_of_sample':
+        descriptors = []
+        for descriptor in descriptor_names:
+            if '/' in descriptor:
+                descriptors.append(descriptor.split('/')[1])
+            else:
+                descriptors.append(descriptor)
+        
+        training_scores_subset = defaultdict()
+        for test_name in test_names[test_type]:
+            
+            training_scores_subset[test_name] = pd.concat([
+                 training_scores[test_type][test_name][
+                    (training_scores[test_type][test_name].index.isin(
+                        descriptors, level='Descriptor'))
+                    &
+                    (training_scores[test_type][test_name].index.get_level_values(
+                        'Test') == 'ranking')
+                    ].unstack('Test Set'),
+                training_scores_mean[test_name][
+                    (training_scores_mean[test_name].index.isin(
+                        descriptors, level='Descriptor'))
+                    &
+                    (training_scores_mean[test_name].index.get_level_values(
+                        'Test') == 'ranking')
+                    ]
+                ], axis=1)
+            training_scores_subset[test_name] = training_scores_subset[test_name].sort_values(
+                ['scores'], 
+                axis='columns'
+                )            
+    
+        writer = pd.ExcelWriter('results/training_main_text_scores.xlsx')
+        for test_name, results in training_scores_subset.items():
             results.to_excel(writer, sheet_name=test_name)
         writer.save()
 
