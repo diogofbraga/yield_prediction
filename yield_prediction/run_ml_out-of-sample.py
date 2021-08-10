@@ -118,8 +118,8 @@ def main():
         hyperparameters = {}
         if i is 'polynomial':
             hyperparameters['scale'] = [1, 2, 5]
-            hyperparameters['degree'] = [2, 3, 5, 10]
-            hyperparameters['bias'] = [0, 1]
+            hyperparameters['degree'] = [2, 5, 10]
+            hyperparameters['bias'] = [0]
         elif i is 'sigmoidlogistic':
             hyperparameters['scale'] = [1, 2]
         elif i is 'sigmoidhyperbolictangent' or i is 'sigmoidarctangent':
@@ -128,7 +128,7 @@ def main():
         elif i is 'rbf':
             hyperparameters['gamma'] = [1, 2, 5, 10, 100, 1000]
         elif i is 'inversemultiquadratic':
-            hyperparameters['bias'] = [0, 1, 2]
+            hyperparameters['bias'] = [1, 2]
 
         hyperp_keys = list(hyperparameters.keys())
         if len(hyperp_keys) == 1:
@@ -144,14 +144,14 @@ def main():
         if len(hyperp_keys) == 0:
             for n in np.arange(2, 7): # 2, 11
                 #print("wl_kernel_functions", i, n)
-                info['graphs_WL{}_{}'.format(i, n)] = defaultdict()
-                info['graphs_WL{}_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)
-                info['graphs_WL{}_{}'.format(i, n)]['X_type'] = 'graphs'
-                info['graphs_WL{}_{}'.format(i, n)]['model_names'] = [
+                info['graphs_WL{}_iterations_{}'.format(i, n)] = defaultdict()
+                info['graphs_WL{}_iterations_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)
+                info['graphs_WL{}_iterations_{}'.format(i, n)]['X_type'] = 'graphs'
+                info['graphs_WL{}_iterations_{}'.format(i, n)]['model_names'] = [
                     'SVR - Precomputed Kernel'
                     ]
-                info['graphs_WL{}_{}'.format(i, n)]['X'] = graphs
-                info['graphs_WL{}_{}'.format(i, n)]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i}
+                info['graphs_WL{}_iterations_{}'.format(i, n)]['X'] = graphs
+                info['graphs_WL{}_iterations_{}'.format(i, n)]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i}
 
         elif len(hyperp_keys) == 1:
             for h0 in values0:
@@ -159,14 +159,14 @@ def main():
                 print(hyperp_path)
                 for n in np.arange(2, 7): # 2, 11
                     #print("wl_kernel_functions", i, n)
-                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path] = defaultdict()
-                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)+hyperp_path
-                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
-                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['model_names'] = [
+                    info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path] = defaultdict()
+                    info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)+hyperp_path
+                    info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
+                    info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['model_names'] = [
                         'SVR - Precomputed Kernel'
                         ]
-                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X'] = graphs
-                    info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0}
+                    info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X'] = graphs
+                    info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0}
 
         elif len(hyperp_keys) == 2:
             for h0 in values0:
@@ -175,14 +175,14 @@ def main():
                     print(hyperp_path)
                     for n in np.arange(2, 7): # 2, 11
                         #print("wl_kernel_functions", i, n)
-                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path] = defaultdict()
-                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)+hyperp_path
-                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
-                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['model_names'] = [
+                        info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path] = defaultdict()
+                        info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)+hyperp_path
+                        info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
+                        info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['model_names'] = [
                             'SVR - Precomputed Kernel'
                             ]
-                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X'] = graphs
-                        info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0, 'h1': h1}
+                        info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X'] = graphs
+                        info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0, 'h1': h1}
 
         elif len(hyperp_keys) == 3:
             for h0 in values0:
@@ -192,14 +192,14 @@ def main():
                         print(hyperp_path)
                         for n in np.arange(2, 7): # 2, 11
                             #print("wl_kernel_functions", i, n)
-                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path] = defaultdict()
-                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_{}'.format(i, n)+hyperp_path
-                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
-                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['model_names'] = [
+                            info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path] = defaultdict()
+                            info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)+hyperp_path
+                            info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
+                            info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['model_names'] = [
                                 'SVR - Precomputed Kernel'
                                 ]
-                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['X'] = graphs
-                            info['graphs_WL{}_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0, 'h1': h1, 'h2': h2}
+                            info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X'] = graphs
+                            info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0, 'h1': h1, 'h2': h2}
                 
 
     '''
