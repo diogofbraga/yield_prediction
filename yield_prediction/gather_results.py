@@ -213,21 +213,63 @@ fps =  [
         ]
 '''  
 
-graphs_folders = [
-    'WLlinear_2', 'WLlinear_3', 'WLlinear_4', 'WLlinear_5', 'WLlinear_6', #'WLlinear_7', 'WLlinear_8', 'WLlinear_9', 'WLlinear_10', 
-    'WLpolynomial_2', 'WLpolynomial_3', 'WLpolynomial_4', 'WLpolynomial_5', 'WLpolynomial_6', #'WLpolynomial_7', 'WLpolynomial_8', 'WLpolynomial_9', 'WLpolynomial_10',
-    'WLsigmoidlogistic_2', 'WLsigmoidlogistic_3', 'WLsigmoidlogistic_4', 'WLsigmoidlogistic_5', 'WLsigmoidlogistic_6',
-    'WLsigmoidhyperbolictangent_2', 'WLsigmoidhyperbolictangent_3', 'WLsigmoidhyperbolictangent_4', 'WLsigmoidhyperbolictangent_5', 'WLsigmoidhyperbolictangent_6', #'WLsigmoidhyperbolictangent_7', 'WLsigmoidhyperbolictangent_8', 'WLsigmoidhyperbolictangent_9', 'WLsigmoidhyperbolictangent_10',
-    'WLsigmoidarctangent_2', 'WLsigmoidarctangent_3', 'WLsigmoidarctangent_4', 'WLsigmoidarctangent_5', 'WLsigmoidarctangent_6',
-    'WLgaussian_2', 'WLgaussian_3', 'WLgaussian_4', 'WLgaussian_5', 'WLgaussian_6',
-    'WLexponential_2', 'WLexponential_3', 'WLexponential_4', 'WLexponential_5', 'WLexponential_6',
-    'WLrbf_2', 'WLrbf_3', 'WLrbf_4', 'WLrbf_5', 'WLrbf_6', #'WLrbf_7', 'WLrbf_8', 'WLrbf_9', 'WLrbf_10'
-    'WLlaplacian_2', 'WLlaplacian_3', 'WLlaplacian_4', 'WLlaplacian_5', 'WLlaplacian_6',
-    'WLrationalquadratic_2', 'WLrationalquadratic_3', 'WLrationalquadratic_4', 'WLrationalquadratic_5', 'WLrationalquadratic_6',
-    'WLmultiquadratic_2', 'WLmultiquadratic_3', 'WLmultiquadratic_4', 'WLmultiquadratic_5', 'WLmultiquadratic_6',
-    'WLinversemultiquadratic_2', 'WLinversemultiquadratic_3', 'WLinversemultiquadratic_4', 'WLinversemultiquadratic_5', 'WLinversemultiquadratic_6',
-    'WLcauchy_2', 'WLcauchy_3', 'WLcauchy_4', 'WLcauchy_5', 'WLcauchy_6'
-    ]
+graphs_folders = []
+wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'rbf', 'inversemultiquadratic']
+max_iterations = 7 # 11
+for i in wl_kernel_functions:
+        hyperparameters = {}
+        if i is 'polynomial':
+            hyperparameters['scale'] = [1, 2, 5]
+            hyperparameters['degree'] = [2, 5, 10]
+            hyperparameters['bias'] = [0]
+        elif i is 'sigmoidlogistic':
+            hyperparameters['scale'] = [1, 2]
+        elif i is 'sigmoidhyperbolictangent':
+            hyperparameters['scale'] = [1, 2]
+            hyperparameters['bias'] = [1]
+        elif i is 'sigmoidarctangent':
+            hyperparameters['scale'] = [1, 2]
+            hyperparameters['bias'] = [0, 1]
+        elif i is 'rbf':
+            hyperparameters['gamma'] = [1, 2, 5, 10, 100, 1000]
+        elif i is 'inversemultiquadratic':
+            hyperparameters['bias'] = [1, 2]
+
+        hyperp_keys = list(hyperparameters.keys())
+        if len(hyperp_keys) == 1:
+            values0 = hyperparameters[hyperp_keys[0]]
+        elif len(hyperp_keys) == 2:
+            values0 = hyperparameters[hyperp_keys[0]]
+            values1 = hyperparameters[hyperp_keys[1]]
+        elif len(hyperp_keys) == 3:
+            values0 = hyperparameters[hyperp_keys[0]]
+            values1 = hyperparameters[hyperp_keys[1]]
+            values2 = hyperparameters[hyperp_keys[2]]
+
+        if len(hyperp_keys) == 0:
+                for n in np.arange(2, max_iterations):
+                    graphs_folders.append('WL{}_iterations_{}'.format(i, n))
+
+        elif len(hyperp_keys) == 1:
+            for h0 in values0:
+                hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0)
+                for n in np.arange(2, max_iterations):
+                    graphs_folders.append('WL{}_iterations_{}'.format(i, n)+hyperp_path)
+
+        elif len(hyperp_keys) == 2:
+            for h0 in values0:
+                for h1 in values1:
+                    hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0) + '_' + str(hyperp_keys[1]) + '_' + str(h1)
+                    for n in np.arange(2, max_iterations):
+                        graphs_folders.append('WL{}_iterations_{}'.format(i, n)+hyperp_path)
+
+        elif len(hyperp_keys) == 3:
+            for h0 in values0:
+                for h1 in values1:
+                    for h2 in values2:
+                        hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0) + '_' + str(hyperp_keys[1]) + '_' + str(h1) + '_' + str(hyperp_keys[2]) + '_' + str(h2)
+                        for n in np.arange(2, max_iterations):
+                            graphs_folders.append('WL{}_iterations_{}'.format(i, n)+hyperp_path)
 
 dirs = defaultdict()
 #dirs['quantum'] = 'quantum_descriptors'
@@ -327,22 +369,6 @@ descriptor_names=[
     'graph_descriptors', 'one_hot_encodings'
     ]
 '''
-
-descriptor_names=[
-    'graph_descriptors/WLlinear_2', 'graph_descriptors/WLlinear_3', 'graph_descriptors/WLlinear_4', 'graph_descriptors/WLlinear_5', 'graph_descriptors/WLlinear_6', #'graph_descriptors/WLlinear_7', 'graph_descriptors/WLlinear_8', 'graph_descriptors/WLlinear_9', 'graph_descriptors/WLlinear_10',
-    'graph_descriptors/WLpolynomial_2', 'graph_descriptors/WLpolynomial_3', 'graph_descriptors/WLpolynomial_4', 'graph_descriptors/WLpolynomial_5', 'graph_descriptors/WLpolynomial_6', #'graph_descriptors/WLpolynomial_7', 'graph_descriptors/WLpolynomial_8', 'graph_descriptors/WLpolynomial_9', 'graph_descriptors/WLpolynomial_10',
-    'graph_descriptors/WLsigmoidlogistic_2', 'graph_descriptors/WLsigmoidlogistic_3', 'graph_descriptors/WLsigmoidlogistic_4', 'graph_descriptors/WLsigmoidlogistic_5', 'graph_descriptors/WLsigmoidlogistic_6',
-    'graph_descriptors/WLsigmoidhyperbolictangent_2', 'graph_descriptors/WLsigmoidhyperbolictangent_3', 'graph_descriptors/WLsigmoidhyperbolictangent_4', 'graph_descriptors/WLsigmoidhyperbolictangent_5', 'graph_descriptors/WLsigmoidhyperbolictangent_6', #'graph_descriptors/WLsigmoidhyperbolictangent_7', 'graph_descriptors/WLsigmoidhyperbolictangent_8', 'graph_descriptors/WLsigmoidhyperbolictangent_9', 'graph_descriptors/WLsigmoidhyperbolictangent_10',
-    'graph_descriptors/WLsigmoidarctangent_2', 'graph_descriptors/WLsigmoidarctangent_3', 'graph_descriptors/WLsigmoidarctangent_4', 'graph_descriptors/WLsigmoidarctangent_5', 'graph_descriptors/WLsigmoidarctangent_6',
-    'graph_descriptors/WLgaussian_2', 'graph_descriptors/WLgaussian_3', 'graph_descriptors/WLgaussian_4', 'graph_descriptors/WLgaussian_5', 'graph_descriptors/WLgaussian_6',
-    'graph_descriptors/WLexponential_2', 'graph_descriptors/WLexponential_3', 'graph_descriptors/WLexponential_4', 'graph_descriptors/WLexponential_5', 'graph_descriptors/WLexponential_6',
-    'graph_descriptors/WLrbf_2', 'graph_descriptors/WLrbf_3', 'graph_descriptors/WLrbf_4', 'graph_descriptors/WLrbf_5', 'graph_descriptors/WLrbf_6', #'graph_descriptors/WLrbf_7', 'graph_descriptors/WLrbf_8', 'graph_descriptors/WLrbf_9', 'graph_descriptors/WLrbf_10'
-    'graph_descriptors/WLlaplacian_2', 'graph_descriptors/WLlaplacian_3', 'graph_descriptors/WLlaplacian_4', 'graph_descriptors/WLlaplacian_5', 'graph_descriptors/WLlaplacian_6',
-    'graph_descriptors/WLrationalquadratic_2', 'graph_descriptors/WLrationalquadratic_3', 'graph_descriptors/WLrationalquadratic_4', 'graph_descriptors/WLrationalquadratic_5', 'graph_descriptors/WLrationalquadratic_6',
-    'graph_descriptors/WLmultiquadratic_2', 'graph_descriptors/WLmultiquadratic_3', 'graph_descriptors/WLmultiquadratic_4', 'graph_descriptors/WLmultiquadratic_5', 'graph_descriptors/WLmultiquadratic_6',
-    'graph_descriptors/WLinversemultiquadratic_2', 'graph_descriptors/WLinversemultiquadratic_3', 'graph_descriptors/WLinversemultiquadratic_4', 'graph_descriptors/WLinversemultiquadratic_5', 'graph_descriptors/WLinversemultiquadratic_6',
-    'graph_descriptors/WLcauchy_2', 'graph_descriptors/WLcauchy_3', 'graph_descriptors/WLcauchy_4', 'graph_descriptors/WLcauchy_5', 'graph_descriptors/WLcauchy_6'
-    ]
 
 test_types=['out_of_sample']
 test_names={
