@@ -113,22 +113,23 @@ def main():
     info['one-hot']['kwargs'] = None
     '''
     graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles)
-    wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'rbf', 'inversemultiquadratic'] # 'linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
+    wl_kernel_functions = ['polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'rbf', 'inversemultiquadratic'] # 'linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
+    max_iterations = 7 # 11
     for i in wl_kernel_functions:
         hyperparameters = {}
         if i is 'polynomial':
-            hyperparameters['scale'] = [1, 2, 5]
-            hyperparameters['degree'] = [2, 5, 10]
-            hyperparameters['bias'] = [0]
-        elif i is 'sigmoidlogistic':
-            hyperparameters['scale'] = [1, 2]
-        elif i is 'sigmoidhyperbolictangent' or i is 'sigmoidarctangent':
-            hyperparameters['scale'] = [1, 2]
+            hyperparameters['scale'] = [1, 2, 5, 10]
+            hyperparameters['degree'] = [2, 3, 4, 5, 10]
             hyperparameters['bias'] = [0, 1]
+        elif i is 'sigmoidlogistic':
+            hyperparameters['scale'] = [0.1, 1, 2, 5]
+        elif i is 'sigmoidhyperbolictangent' or i is 'sigmoidarctangent':
+            hyperparameters['scale'] = [1, 2, 5]
+            hyperparameters['bias'] = [0, 0.1, 1]
         elif i is 'rbf':
-            hyperparameters['gamma'] = [1, 2, 5, 10, 100, 1000]
+            hyperparameters['gamma'] = [2000, 5000] # [1, 2, 5, 10, 100, 1000, 2000, 5000]
         elif i is 'inversemultiquadratic':
-            hyperparameters['bias'] = [1, 2]
+            hyperparameters['bias'] = [0.1, 1, 2, 10]
 
         hyperp_keys = list(hyperparameters.keys())
         if len(hyperp_keys) == 1:
@@ -142,7 +143,7 @@ def main():
             values2 = hyperparameters[hyperp_keys[2]]
 
         if len(hyperp_keys) == 0:
-            for n in np.arange(2, 7): # 2, 11
+            for n in np.arange(2, max_iterations):
                 #print("wl_kernel_functions", i, n)
                 info['graphs_WL{}_iterations_{}'.format(i, n)] = defaultdict()
                 info['graphs_WL{}_iterations_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)
@@ -157,7 +158,7 @@ def main():
             for h0 in values0:
                 hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0)
                 print(hyperp_path)
-                for n in np.arange(2, 7): # 2, 11
+                for n in np.arange(2, max_iterations):
                     #print("wl_kernel_functions", i, n)
                     info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path] = defaultdict()
                     info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)+hyperp_path
@@ -173,7 +174,7 @@ def main():
                 for h1 in values1:
                     hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0) + '_' + str(hyperp_keys[1]) + '_' + str(h1)
                     print(hyperp_path)
-                    for n in np.arange(2, 7): # 2, 11
+                    for n in np.arange(2, max_iterations):
                         #print("wl_kernel_functions", i, n)
                         info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path] = defaultdict()
                         info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)+hyperp_path
@@ -190,7 +191,7 @@ def main():
                     for h2 in values2:
                         hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0) + '_' + str(hyperp_keys[1]) + '_' + str(h1) + '_' + str(hyperp_keys[2]) + '_' + str(h2)
                         print(hyperp_path)
-                        for n in np.arange(2, 7): # 2, 11
+                        for n in np.arange(2, max_iterations):
                             #print("wl_kernel_functions", i, n)
                             info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path] = defaultdict()
                             info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)+hyperp_path

@@ -219,18 +219,18 @@ max_iterations = 7 # 11
 for i in wl_kernel_functions:
         hyperparameters = {}
         if i is 'polynomial':
-            hyperparameters['scale'] = [1, 2, 5]
-            hyperparameters['degree'] = [2, 5, 10]
-            hyperparameters['bias'] = [0]
-        elif i is 'sigmoidlogistic':
-            hyperparameters['scale'] = [1, 2]
-        elif i is 'sigmoidhyperbolictangent' or i is 'sigmoidarctangent':
-            hyperparameters['scale'] = [1, 2]
+            hyperparameters['scale'] = [1, 2, 5, 10]
+            hyperparameters['degree'] = [2, 3, 4, 5, 10]
             hyperparameters['bias'] = [0, 1]
+        elif i is 'sigmoidlogistic':
+            hyperparameters['scale'] = [0.1, 1, 2, 5]
+        elif i is 'sigmoidhyperbolictangent' or i is 'sigmoidarctangent':
+            hyperparameters['scale'] = [1, 2, 5]
+            hyperparameters['bias'] = [0, 0.1, 1]
         elif i is 'rbf':
-            hyperparameters['gamma'] = [1, 2, 5, 10, 100, 1000]
+            hyperparameters['gamma'] = [1, 2, 5, 10, 100, 1000, 2000, 5000]
         elif i is 'inversemultiquadratic':
-            hyperparameters['bias'] = [1, 2]
+            hyperparameters['bias'] = [0.1, 1, 2, 10]
 
         hyperp_keys = list(hyperparameters.keys())
         if len(hyperp_keys) == 1:
