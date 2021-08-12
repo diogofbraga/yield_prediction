@@ -113,14 +113,13 @@ def main():
     info['one-hot']['kwargs'] = None
     '''
     graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles)
-    wl_kernel_functions = ['polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'rbf', 'inversemultiquadratic'] # 'linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
+    wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'rbf', 'inversemultiquadratic'] # 'linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
     max_iterations = 7 # 11
     for i in wl_kernel_functions:
         hyperparameters = {}
         if i is 'polynomial':
             hyperparameters['scale'] = [1, 2, 5, 10]
-            hyperparameters['degree'] = [2, 3, 4, 5, 10]
-            hyperparameters['bias'] = [0, 1]
+            hyperparameters['degree'] = [2, 3, 4, 5]
         elif i is 'sigmoidlogistic':
             hyperparameters['scale'] = [0.1, 1, 2, 5]
         elif i is 'sigmoidhyperbolictangent' or i is 'sigmoidarctangent':
