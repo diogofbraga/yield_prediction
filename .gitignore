@@ -27,3 +27,4 @@ yield_prediction/tools/__pycache__
 yield_prediction/tools/machine_learning/grakel_nonlinear/__pycache__
 dist/
 yield_prediction.egg-info/
+graph_descriptors/.DS_Store
