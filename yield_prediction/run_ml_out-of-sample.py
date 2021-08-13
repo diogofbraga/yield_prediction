@@ -384,7 +384,7 @@ def main():
                 rxn_component=rxn_component, 
                 saveas='./results/{}/{}/{}/{}'.format(
                     info_d['dir'], test_name, rxn_component, name),
-                save_plots=True,
+                save_plots=False,
                 save_table=True,
                 save_model=False,
                 kwargs=info_d['kwargs']
@@ -432,7 +432,7 @@ def main():
                 rxn_component=rxn_component, 
                 saveas='./results/{}/{}/{}/{}'.format(
                     info_d['dir'], test_name, rxn_component, name),
-                save_plots=True,
+                save_plots=False,
                 save_table=True,
                 save_model=False,
                 kwargs=info_d['kwargs']
@@ -458,7 +458,7 @@ def main():
                     rxn_component=rxn_component, 
                     saveas='./results/{}/{}/{}/{}'.format(
                         info_d['dir'], test_name, rxn_component, 'LOO_{}'.format(mol)),
-                    save_plots=True,
+                    save_plots=False,
                     save_table=True,
                     save_model=False,
                     kwargs=info_d['kwargs']
