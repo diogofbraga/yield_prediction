@@ -120,14 +120,14 @@ def main():
         if i is 'polynomial':
             hyperparameters['scale'] = [1, 2, 5, 10]
             hyperparameters['degree'] = [2, 3, 4, 5]
-            hyperparameters['bias'] = [0, 1]
+            hyperparameters['bias'] = [0]
         elif i is 'sigmoidlogistic':
             hyperparameters['scale'] = [0.1, 1, 2, 5]
         elif i is 'sigmoidhyperbolictangent' or i is 'sigmoidarctangent':
             hyperparameters['scale'] = [1, 2, 5]
             hyperparameters['bias'] = [0, 0.1, 1]
         elif i is 'rbf':
-            hyperparameters['gamma'] = [1, 2, 5, 10, 100, 1000, 2000, 5000, 10000, 20000]
+            hyperparameters['gamma'] = [1, 2, 5, 10, 100, 1000, 2000, 5000, 10000, 20000, 50000]
         elif i is 'inversemultiquadratic':
             hyperparameters['bias'] = [0.1, 1, 2, 10]
 

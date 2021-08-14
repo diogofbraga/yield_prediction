@@ -302,10 +302,12 @@ training_scores = get_results(
     sheet_name='training_scores'
     )
 
+
 for test_type in scores.keys():
     if test_type == 'out_of_sample':
         scores_mean = defaultdict()
         for test_name in scores[test_type].keys():
+            print(1)
             if isinstance(scores[test_type][test_name], pd.DataFrame):
                 scores_mean[test_name] = pd.DataFrame()
                 
@@ -422,7 +424,7 @@ test_names={
 test_names={
         'out_of_sample': ['additive', 'aryl_halide'],
         }
-
+'''
 y_pred = get_results(
         descriptor_names=descriptor_names,
         test_types=['out_of_sample'],
@@ -471,7 +473,7 @@ for name, fps in y_pred_to_save.items():
         df.to_excel(writer, sheet_name='{}'.format(k))
     writer.save()
            
-     
+'''     
 
 for test_type in scores.keys():
     if test_type == 'out_of_sample':
@@ -484,7 +486,7 @@ for test_type in scores.keys():
         
         scores_subset = defaultdict()
         for test_name in test_names[test_type]:
-            
+            print(test_name)    
             scores_subset[test_name] = pd.concat([
                  scores[test_type][test_name][
                     (scores[test_type][test_name].index.isin(
@@ -510,6 +512,7 @@ for test_type in scores.keys():
         for test_name, results in scores_subset.items():
             results.to_excel(writer, sheet_name=test_name)
         writer.save()
+
 
 # Training Scores Benchmarking
 for test_type in training_scores.keys():
@@ -550,7 +553,7 @@ for test_type in training_scores.keys():
             results.to_excel(writer, sheet_name=test_name)
         writer.save()
 
-'''       
+'''
 descriptor_names=[
     'quantum_descriptors_missing_additive', 
     'fp_descriptors/Morgan1_1024/raw', 'fp_descriptors/Morgan1_1024/concat',

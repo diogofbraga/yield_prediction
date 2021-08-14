@@ -333,7 +333,7 @@ class kernel():
         elif kernel_function is 'polynomial':
             scale = h0
             degree = h1
-            bias = 0
+            bias = h2
             K = (scale * K + bias) ** degree
         
         elif kernel_function is 'sigmoidlogistic':
