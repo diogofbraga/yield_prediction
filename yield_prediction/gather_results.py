@@ -74,7 +74,7 @@ def get_results(descriptor_names, test_types, test_names, sheet_name='scores',
                             
                             df.columns = df.columns.str.lstrip('yield_pred')
                             
-                            if descriptor_name == 'graph_descriptors':
+                            if 'graph_descriptors' in descriptor_name:
                                 df.rename(
                                     columns={'SVR - Precomputed Kernel': 'SVR - WL Kernel'}, 
                                     inplace=True
@@ -116,7 +116,7 @@ def get_results(descriptor_names, test_types, test_names, sheet_name='scores',
                             
                             df.columns = df.columns.str.lstrip('yield_pred')
                             
-                            if descriptor_name == 'graph_descriptors':
+                            if 'graph_descriptors' in descriptor_name:
                                 df.rename(
                                     columns={'SVR - Precomputed Kernel': 'SVR - WL Kernel'}, 
                                     inplace=True
@@ -221,14 +221,14 @@ for i in wl_kernel_functions:
         if i is 'polynomial':
             hyperparameters['scale'] = [1, 2, 5, 10]
             hyperparameters['degree'] = [2, 3, 4, 5]
-            hyperparameters['bias'] = [0, 1]
+            #hyperparameters['bias'] = [0, 1]
         elif i is 'sigmoidlogistic':
             hyperparameters['scale'] = [0.1, 1, 2, 5]
         elif i is 'sigmoidhyperbolictangent' or i is 'sigmoidarctangent':
             hyperparameters['scale'] = [1, 2, 5]
             hyperparameters['bias'] = [0, 0.1, 1]
         elif i is 'rbf':
-            hyperparameters['gamma'] = [1, 2, 5, 10, 100, 1000, 2000, 5000, 10000, 20000]
+            hyperparameters['gamma'] = [1, 2, 5, 10, 100, 1000, 2000, 5000, 10000, 20000, 50000]
         elif i is 'inversemultiquadratic':
             hyperparameters['bias'] = [0.1, 1, 2, 10]
 
@@ -284,6 +284,9 @@ test_names={
     'out_of_sample': ['additive', 'aryl_halide', 'base', 'ligand'],
     }
 
+print(dirs)
+
+
 scores = get_results(
     descriptor_names=[dirs[k] for k in dirs.keys()],
     test_types=['out_of_sample'],
@@ -291,8 +294,9 @@ scores = get_results(
         'out_of_sample': ['additive', 'aryl_halide', 'base', 'ligand'],
         }
     )
+print("Scores Done")
 
-# Training Scores Benchmarking
+
 training_scores = get_results(
     descriptor_names=[dirs[k] for k in dirs.keys()],
     test_types=['out_of_sample'],
@@ -301,13 +305,15 @@ training_scores = get_results(
         },
     sheet_name='training_scores'
     )
+print("Training Scores Done")
+
 
 
 for test_type in scores.keys():
     if test_type == 'out_of_sample':
         scores_mean = defaultdict()
         for test_name in scores[test_type].keys():
-            print(1)
+            print("Test1")
             if isinstance(scores[test_type][test_name], pd.DataFrame):
                 scores_mean[test_name] = pd.DataFrame()
                 
@@ -341,11 +347,13 @@ for test_type in scores.keys():
             results.to_excel(writer, sheet_name='{}_mean'.format(test_name))
         writer.save()
 
+
 # Training Scores Benchmarking
 for test_type in training_scores.keys():
     if test_type == 'out_of_sample':
         training_scores_mean = defaultdict()
         for test_name in training_scores[test_type].keys():
+            print("Training1")
             if isinstance(training_scores[test_type][test_name], pd.DataFrame):
                 training_scores_mean[test_name] = pd.DataFrame()
                 
@@ -378,6 +386,7 @@ for test_type in training_scores.keys():
         for test_name, results in training_scores_mean.items():
             results.to_excel(writer, sheet_name='{}_mean'.format(test_name))
         writer.save()
+
 
 '''
 fps_bit_length_results = defaultdict()
@@ -424,6 +433,7 @@ test_names={
 test_names={
         'out_of_sample': ['additive', 'aryl_halide'],
         }
+
 '''
 y_pred = get_results(
         descriptor_names=descriptor_names,
@@ -472,8 +482,7 @@ for name, fps in y_pred_to_save.items():
     for k, df in fps.items():
         df.to_excel(writer, sheet_name='{}'.format(k))
     writer.save()
-           
-'''     
+'''
 
 for test_type in scores.keys():
     if test_type == 'out_of_sample':
@@ -486,7 +495,7 @@ for test_type in scores.keys():
         
         scores_subset = defaultdict()
         for test_name in test_names[test_type]:
-            print(test_name)    
+            print("Test1", test_name)    
             scores_subset[test_name] = pd.concat([
                  scores[test_type][test_name][
                     (scores[test_type][test_name].index.isin(
@@ -526,7 +535,7 @@ for test_type in training_scores.keys():
         
         training_scores_subset = defaultdict()
         for test_name in test_names[test_type]:
-            
+            print("Training2", test_name)   
             training_scores_subset[test_name] = pd.concat([
                  training_scores[test_type][test_name][
                     (training_scores[test_type][test_name].index.isin(
