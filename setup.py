@@ -33,14 +33,13 @@ process = subprocess.Popen(bashCommand3.split(), stdout=subprocess.PIPE)
 output, error = process.communicate()
 
 if platform == "linux" or platform == "linux2": # linux
-      bashCommand4 = "pip3 install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html -y"
+      bashCommand4 = "pip3 install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html"
       process = subprocess.Popen(bashCommand4.split(), stdout=subprocess.PIPE)
       output, error = process.communicate()
 
-      #bashCommand5 = "pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html"
-      #process = subprocess.Popen(bashCommand5.split(), stdout=subprocess.PIPE)
-      #output, error = process.communicate()
-      
+      bashCommand5 = "pip3 install torch-scatter==2.0.8 torch-sparse==0.6.11 torch-cluster==1.5.9 torch-spline-conv==1.2.1 torch-geometric==1.7.2 -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html"
+      process = subprocess.Popen(bashCommand5.split(), stdout=subprocess.PIPE)
+      output, error = process.communicate()
 elif platform == "darwin": # OS X
       bashCommand4 = "pip3 install torch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0"
       process = subprocess.Popen(bashCommand4.split(), stdout=subprocess.PIPE)
