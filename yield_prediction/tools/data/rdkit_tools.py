@@ -13,6 +13,7 @@ from rdkit.Chem import AllChem
 from rdkit.Chem.AllChem import GetMorganFingerprintAsBitVect
 from rdkit.Chem import RDKFingerprint
 from rdkit import DataStructs
+import networkx as nx
 
 def mol_from_sdf(sdf_file):
     mol = Chem.SDMolSupplier(sdf_file)
@@ -60,14 +61,42 @@ def name_from_smiles(smiles):
         return name
     except:
         return float('nan')
-    
+
 def molg_from_smi(smiles):
     mol = Chem.MolFromSmiles(smiles)
     atom_with_idx = { i:atom.GetSymbol() for i, atom in enumerate(mol.GetAtoms())}
     bond_with_idx = {i:bond.GetBondTypeAsDouble() for i,bond in enumerate(mol.GetBonds())}
     adj_m = Chem.GetAdjacencyMatrix(mol, useBO=True).tolist()
 
+    #print("atom_with_idx", atom_with_idx)
+    #print("bond_with_idx", bond_with_idx)
+    #print("adj_m", adj_m)
+
     return Graph(adj_m, atom_with_idx, bond_with_idx)
+
+
+def molnx_from_smi(smiles):
+    G = nx.Graph()
+
+    mol = Chem.MolFromSmiles(smiles.strip())
+
+    for atom in mol.GetAtoms():
+        G.add_node(atom.GetIdx(),
+                   symbol=atom.GetSymbol())
+
+    for bond in mol.GetBonds():
+        G.add_edge(bond.GetBeginAtomIdx(),
+                   bond.GetEndAtomIdx(),
+                   idx=bond.GetIdx(),
+                   bond_type=bond.GetBondTypeAsDouble())
+
+    #print("nodes", G.nodes(data=True))
+    #print("edges", G.edges(data=True))
+
+    A = nx.adjacency_matrix(G) # Returns a sparse matrix
+    #print(A.todense())
+
+    return G
 
 # def fps_from_smi(smiles):
 #     mol = Chem.MolFromSmiles(smiles)

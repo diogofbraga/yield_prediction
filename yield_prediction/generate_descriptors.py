@@ -12,6 +12,7 @@ import pandas as pd
 from sklearn.preprocessing import scale
 import numpy as np
 import os 
+import networkx as nx
 
 os.sys.path.append(os.getcwd())
 
@@ -177,7 +178,7 @@ def get_smiles_data(rxn_components, reactions, hand_coded_smi, saveas=None):
         rxn_smiles.to_excel(saveas, merge_cells=False)
     return rxn_smiles
 
-def assemble_graph_descriptors(rxn_components, reactions, rxn_smiles):
+def assemble_graph_descriptors(rxn_components, reactions, rxn_smiles, mode):
     
     graphs_data = defaultdict(list)
     for rxn_component in rxn_components:
@@ -193,13 +194,24 @@ def assemble_graph_descriptors(rxn_components, reactions, rxn_smiles):
                     rxn_smiles.index.isin([mol], rxn_component)
                     ]['{}_smiles'.format(rxn_component)].drop_duplicates().item()
                 
-                graphs_data[rxn_component].append(
-                    {'name': mol,
-                     '{}_molg'.format(rxn_component): rd.molg_from_smi(smi)
-                     })
+                if mode is 'grakel':
+                    graphs_data[rxn_component].append(
+                        {'name': mol,
+                        '{}_molg'.format(rxn_component): rd.molg_from_smi(smi)
+                        })
+                else:
+                    graphs_data[rxn_component].append(
+                        {'name': mol,
+                        '{}_molg'.format(rxn_component): rd.molnx_from_smi(smi)
+                        })
             
         graphs_data[rxn_component] = pd.DataFrame.from_records(
             graphs_data[rxn_component])
+
+        #print("graphs_data", graphs_data['additive']['additive_molg'][0].get_adjacency_matrix())
+        #print("graphs_data", graphs_data['additive']['additive_molg'][0].nodes(data=True))
+        #print(nx.adjacency_matrix(graphs_data['additive']['additive_molg'][0]).todense())
+        #print("reactions", reactions)
             
     graph_descriptors = combine_descriptors_to_reactions(graphs_data, reactions)
     

@@ -11,6 +11,7 @@ import numpy as np
 from generate_descriptors import assemble_graph_descriptors, assemble_fingerprint_descriptors, assemble_one_hot_encondings
 import tools.data.rdkit_tools as rd
 import tools.machine_learning.machine_learning_tests as ml_tests
+import networkx as nx
 
 
 class ranking():
@@ -112,7 +113,27 @@ def main():
         )
     info['one-hot']['kwargs'] = None
     '''
-    graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles)
+    mode = 'gnn' # 'grakel'
+    graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles, mode)
+    #print(graphs.iloc[0]['additive_molg'].get_adjacency_matrix())
+    #print(graphs.iloc[0]['additive_molg'].get_edge_dictionary())
+    #print(graphs.iloc[0]['additive_molg'].get_vertices())
+    #print(graphs.iloc[0]['additive_molg'].get_edges())
+    #print(graphs.iloc[0]['additive_molg'].nodes(data=True))
+    #print(graphs.iloc[0]['additive_molg'].edges(data=True))
+
+    print(len(graphs))
+
+    info['graphs_gnn'] = defaultdict()
+    info['graphs_gnn']['dir'] = 'graph_descriptors/WL_gnn'
+    info['graphs_gnn']['X_type'] = 'graphs'
+    info['graphs_gnn']['model_names'] = [
+        'Graph Neural Network'
+        ]
+    info['graphs_gnn']['X'] = graphs
+    info['graphs_gnn']['kwargs'] = {}
+
+    '''
     wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'rbf', 'inversemultiquadratic'] # 'linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
     max_iterations = 7 # 11
     for i in wl_kernel_functions:
@@ -202,6 +223,7 @@ def main():
                             info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X'] = graphs
                             info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0, 'h1': h1, 'h2': h2}
                 
+    '''
 
     '''
     info['graphs_WL_randomwalk'] = defaultdict()

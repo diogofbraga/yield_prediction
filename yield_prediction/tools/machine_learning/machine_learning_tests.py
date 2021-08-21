@@ -23,6 +23,7 @@ from tools.data.rdkit_tools import caluclate_tanimoto
 from tools.machine_learning import model_selection
 from tools.machine_learning.kernels import kernel
 from tools.utils.plotting import plotting
+from tools.machine_learning import gnn
 
 
 def save_fig_to_excel(excel_file, sheet_name, image_file, text=None):
@@ -659,6 +660,8 @@ class machine_learning():
         
         return individual_scores
 
+
+
 models = {
     'SVR - Linear Kernel': model_selection.model_selector(
             'svm', 'SVR', kernel='linear'),
@@ -682,6 +685,7 @@ models = {
             'ensemble', 'GradientBoostingRegressor'),
     'Decision Tree': model_selection.model_selector(
             'tree', 'DecisionTreeRegressor'),
+    'Graph Neural Network': gnn.GraphClassificationModel()
     }
 
 param_grid = {
@@ -726,6 +730,8 @@ param_grid = {
         'learning_rate': [0.05, 0.1, 0.15, 0.2]
         },
     'Decision Tree': {
+        },
+    'Graph Neural Network': {
         }
     }
 
@@ -832,6 +838,8 @@ def out_of_sample(
     # Split descriptors into train and test sets.
     out_of_sample_test.split_descriptors_out_of_sample(
         rxn_component, molecule_test_list)
+
+    print("SIGAAAAAAAAAA")
 
     print('\nSTEP 2: Preprocessing descriptors.')
     if X_type == 'graphs':
