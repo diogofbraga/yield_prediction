@@ -12,14 +12,11 @@ Prediction of reaction yields using support vector regression models built on st
 * Numpy (1.19.1)
 * Scipy (1.5.2)
 * Pandas (1.1.1)
+* PyTorch (1.9.0 + CUDA 11.1 (Linux) / 1.9.0 + CPU (OS X))
+* PyTorch Geometric (1.7.2) & dependencies
 
 ### Environment creation
-* Using the yml file (Linux):
-```bash
-conda env create -f yield_prediction.yml
-```
-
-* Using the setup.py file (if conflicts arise):
+* Using the setup.py file:
 ```bash
 conda create --name yield_prediction python=3.6 -y
 
