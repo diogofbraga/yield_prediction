@@ -74,7 +74,7 @@ def molg_from_smi(smiles):
 
     return Graph(adj_m, atom_with_idx, bond_with_idx)
 
-
+#symbols = []
 def molnx_from_smi(smiles):
     G = nx.Graph()
 
@@ -84,10 +84,13 @@ def molnx_from_smi(smiles):
         G.add_node(atom.GetIdx(),
                    symbol=atom.GetSymbol())
 
+        #if atom.GetSymbol() not in symbols:
+            #symbols.append(atom.GetSymbol())
+
     for bond in mol.GetBonds():
         G.add_edge(bond.GetBeginAtomIdx(),
                    bond.GetEndAtomIdx(),
-                   idx=bond.GetIdx(),
+                   #idx=bond.GetIdx(),
                    bond_type=bond.GetBondTypeAsDouble())
 
     #print("nodes", G.nodes(data=True))
@@ -96,6 +99,7 @@ def molnx_from_smi(smiles):
     A = nx.adjacency_matrix(G) # Returns a sparse matrix
     #print(A.todense())
 
+    #print(symbols)
     return G
 
 # def fps_from_smi(smiles):

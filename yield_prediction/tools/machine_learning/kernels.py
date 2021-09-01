@@ -5,7 +5,6 @@ Kernel modules.
 """
 import pandas as pd
 import numpy as np
-import csv # Added by diogofbraga
 
 import grakel.kernels as kernels
 import sklearn.metrics.pairwise as sklearn_kernels
@@ -471,6 +470,39 @@ class kernel():
                     train = self.calculate_distance_kernel(train)
 
                 train = self.non_linearity(train, kernel_function, h0, h1, h2)
+
+                k_train = k_train * train          
+            
+        return k_train, k_test
+
+    def gnn_multiple_descriptor_types(self, X_train, X_test, y_train, y_test, **kernel_params):
+        k_train = 1
+
+        if X_test is not None:
+            k_test = 1
+            
+            if X_train.isnull().values.any() or X_test.isnull().values.any(): 
+                for i in X_train:
+                    train, test = self.calculate_kernel_matrices_with_missing_mols(
+                    X_train[i], X_test[i], **kernel_params
+                    )
+
+                    k_train = k_train * train
+                    k_test = k_test * test
+            else:
+                for i in X_train:
+                    train, test = self.calculate_kernel_matrices(
+                    X_train[i], X_test[i], **kernel_params
+                    )
+                    k_train = k_train * train
+                    k_test = k_test * test
+                    
+        else:
+            k_test = None
+            for i in X_train:
+                train = self.calculate_kernel_matrices(
+                    X_train[i], None, **kernel_params
+                    )
 
                 k_train = k_train * train          
             

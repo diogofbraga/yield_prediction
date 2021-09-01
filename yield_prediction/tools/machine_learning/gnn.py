@@ -77,3 +77,5 @@ def run(train_dataset, test_dataset):
     model = GraphClassificationModel(torch_geometric.nn.GCNConv)
     print(model)
     train(model, train_loader, test_loader, num_epochs=100)
+
+    return model

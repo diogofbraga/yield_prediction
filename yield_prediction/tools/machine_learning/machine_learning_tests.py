@@ -11,10 +11,11 @@ import os
 import numpy as np
 from collections import defaultdict
 import openpyxl
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.model_selection import KFold
 import pickle
+
 
 # import sys
 # sys.path.insert(1, '/home/alexehaywood/Documents/yield_prediction/yield_prediction/')
@@ -24,6 +25,9 @@ from tools.machine_learning import model_selection
 from tools.machine_learning.kernels import kernel
 from tools.utils.plotting import plotting
 from tools.machine_learning import gnn
+import torch
+from torch_geometric.utils import from_networkx
+import networkx as nx
 
 
 def save_fig_to_excel(excel_file, sheet_name, image_file, text=None):
@@ -97,7 +101,7 @@ class machine_learning():
                 scaler.transform(X_test), 
                 index=X_test.index
                 )
-        
+
     def preprocess_graph_descriptors(self, X_train=None, X_test=None,
                                      kernel_params={}):
         if X_train is None:
@@ -112,6 +116,71 @@ class machine_learning():
         
         k_train, k_test = graph_kernel.multiple_descriptor_types(
             X_train, X_test, n_jobs=n_jobs, **kernel_params)
+        
+        self.X_train = pd.DataFrame(k_train, index=X_train.index)
+        if X_test is not None:
+            self.X_test = pd.DataFrame(k_test, index=X_test.index)
+        
+    def ohe(self, value):
+        reference = ['O', 'N', 'C', 'F', 'S', 'Cl', 'Br', 'I', 'P']
+        #idx = value.__getitem__('idx').numpy()
+        symbols = value.__getitem__('symbol')
+        #result = []
+        #print("idx", idx)
+        #print("symbols", symbols)
+        #for i in np.nditer(idx):
+        #    result.append(symbols[i])
+
+        result = pd.Categorical(symbols, categories=reference)
+        result = pd.get_dummies(result).to_numpy()
+
+        #print(result)
+        return result
+        
+
+    def process_gnn(self, X_train=None, X_test=None, y_train=None, y_test=None,
+                                     kernel_params={}):
+        if X_train is None:
+            X_train = self.X_train
+        if X_test is None:
+            X_test = self.X_test
+        if y_train is None:
+            y_train = self.y_train
+        if y_test is None:
+            y_test = self.y_test
+
+        train_dataset = {}
+        for molg_type in X_train:
+            train_dataset[molg_type] = []
+            for index, value in X_train[molg_type].items():
+                #print("Value", value)
+                #print("nodes", value.nodes(data=True))
+                #print("edges", value.edges(data=True))
+                #print(value)
+                g = from_networkx(value)
+                #print(g)
+                #print("g", g.to_dict())
+                x = self.ohe(g)
+                g.__setitem__('x', torch.tensor(x))
+                #print("g", g)
+                #print("g", g.to_dict())
+                train_dataset[molg_type].append(g)
+                #print(f"Index : {index}, Value : {type(value)}")
+
+        #print(X_train.iloc[0]['additive_molg'].nodes(data=True))
+        #print(y_test.iloc[0])
+
+        print(train_dataset['additive_molg'][0].to_dict())
+
+        model = self.models['Graph Neural Network']
+            
+        kernel_name = kernel_params['kernel_name']
+        graph_kernel = kernel(kernel_name)
+
+        # Create graph kernel matricies for the train and test set.
+        
+        k_train, k_test = graph_kernel.gnn_multiple_descriptor_types(
+            X_train, X_test, y_train, y_test, n_jobs=n_jobs, **kernel_params)
         
         self.X_train = pd.DataFrame(k_train, index=X_train.index)
         if X_test is not None:
@@ -685,7 +754,7 @@ models = {
             'ensemble', 'GradientBoostingRegressor'),
     'Decision Tree': model_selection.model_selector(
             'tree', 'DecisionTreeRegressor'),
-    'Graph Neural Network': gnn.GraphClassificationModel()
+    'Graph Neural Network': gnn.GraphClassificationModel(gnn.torch_geometric.nn.GCNConv)
     }
 
 param_grid = {
@@ -839,8 +908,6 @@ def out_of_sample(
     out_of_sample_test.split_descriptors_out_of_sample(
         rxn_component, molecule_test_list)
 
-    print("SIGAAAAAAAAAA")
-
     print('\nSTEP 2: Preprocessing descriptors.')
     if X_type == 'graphs':
         # Create graph kernels for the train and test descriptor sets.
@@ -853,6 +920,9 @@ def out_of_sample(
             pass
         elif X.iloc[0].dtypes == object:
             out_of_sample_test.preprocess_fingerprint_descriptors()
+    elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
+        out_of_sample_test.process_gnn()
+
     
     print('\nStep 3: Tuning hyperparameters and predicting yeild.')
     # Tune the models hyperparameters and predict reaction yield, calculate 

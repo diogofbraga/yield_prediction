@@ -15,7 +15,7 @@ output, error = process.communicate()
 # Instalation requirements
 setup(name='yield_prediction',
       version='1.0',
-      install_requires=['networkx==2.2',
+      install_requires=['networkx==2.6.2',
                         'grakel==0.1.8',
                         'matplotlib==3.3.2',
                         'xlrd==1.2.0',

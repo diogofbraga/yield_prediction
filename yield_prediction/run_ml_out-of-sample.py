@@ -121,12 +121,15 @@ def main():
     #print(graphs.iloc[0]['additive_molg'].get_edges())
     #print(graphs.iloc[0]['additive_molg'].nodes(data=True))
     #print(graphs.iloc[0]['additive_molg'].edges(data=True))
-
-    print(len(graphs))
+    #g = nx.Graph()
+    #g = nx.convert_node_labels_to_integers(graphs.iloc[0]['additive_molg'])
+    #print("Label", g)
+    #print(g.nodes(data=True))
+    #print(g.edges(data=True))
 
     info['graphs_gnn'] = defaultdict()
     info['graphs_gnn']['dir'] = 'graph_descriptors/WL_gnn'
-    info['graphs_gnn']['X_type'] = 'graphs'
+    info['graphs_gnn']['X_type'] = 'gnn'
     info['graphs_gnn']['model_names'] = [
         'Graph Neural Network'
         ]
