@@ -5,11 +5,64 @@ import torch.nn.functional as F
 import torch_geometric
 from torch_geometric.utils import to_dense_adj, to_networkx
 from torch_geometric.data import DataLoader
+import numpy as np
 
+class SumPoolLayer(torch.nn.Module):
+    # sz_in=F, sz_out=F'
+    # we will apply the nonlinearity later
+    def __init__(self, sz_in, sz_out):
+        super().__init__()
+        self.W = nn.Parameter(torch.empty(size=(sz_in, sz_out)))
+        nn.init.xavier_uniform_(self.W.data)
+    
+    # Propagation rule: H' = sigma(AHW) 
+    def forward(self, fts, adj):
+        new_fts = torch.mm(fts, self.W)
+        ret_fts = torch.mm(adj, new_fts)
+        return ret_fts
 
-class GraphClassificationModel(torch.nn.Module):
+class LinearLayer(torch.nn.Module):
+    def __init__(self, sz_in, sz_out):
+        super().__init__()
+        self.W = nn.Parameter(torch.empty(size=(sz_in, sz_out)))
+        nn.init.xavier_uniform_(self.W.data)
+    
+    def forward(self, fts, adj):
+        # Simple linear layer application
+        new_fts = torch.mm(fts, self.W)
+        return new_fts
 
-    def __init__(self, layer_type, num_layers=3, sz_in=7, sz_hid=256, sz_out=1):
+class MeanPoolLayer(torch.nn.Module):
+    def __init__(self, sz_in, sz_out):
+        super().__init__()
+        self.W = nn.Parameter(torch.empty(size=(sz_in, sz_out)))
+        nn.init.xavier_uniform_(self.W.data)
+    
+    def forward(self, fts, adj):
+        new_fts = torch.mm(fts, self.W)
+        deg = adj.sum(axis=1) # New!
+        ret_fts = torch.mm(adj/deg, new_fts) # New!
+        return ret_fts
+
+class GCNLayer(torch.nn.Module):
+    def __init__(self, sz_in, sz_out):
+        super().__init__()
+        self.W = nn.Parameter(torch.empty(size=(sz_in, sz_out)))
+        nn.init.xavier_uniform_(self.W.data)
+    
+    def forward(self, fts, adj):
+        new_fts = torch.mm(fts, self.W)
+
+        deg = adj.sum(axis=1)
+        deg_inv_half = torch.diag(1.0 / torch.sqrt(deg)) # New!
+        adj_norm = deg_inv_half @ adj @ deg_inv_half # New!
+        
+        ret_fts = torch.mm(adj_norm, new_fts) # New!
+        return ret_fts
+
+class GraphRegressionModel(torch.nn.Module):
+
+    def __init__(self, layer_type, num_layers=3, sz_in=9, sz_hid=256, sz_out=1):
         super().__init__()
 
         # GNN layers with ReLU, as before
@@ -42,7 +95,7 @@ class GraphClassificationModel(torch.nn.Module):
 # Train the given model on the given dataset for num_epochs
 def train(model, train_loader, test_loader, num_epochs):
     # Set up the loss and the optimizer
-    loss_fn = nn.BCEWithLogitsLoss()
+    loss_fn = nn.MSELoss() #BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.01)
 
     # A utility function to compute the accuracy
@@ -60,7 +113,9 @@ def train(model, train_loader, test_loader, num_epochs):
             # Zero grads -> forward pass -> compute loss -> backprop
             optimizer.zero_grad()
             outs = model(data.x, data.edge_index, data.batch).squeeze()
+            #print("outs: \n", outs)
             loss = loss_fn(outs, data.y.float()) # no train_mask!
+            #print("loss: \n", loss)
             loss.backward()
             optimizer.step()
 
@@ -68,14 +123,3 @@ def train(model, train_loader, test_loader, num_epochs):
         acc_train = get_acc(model, train_loader)
         acc_test = get_acc(model, test_loader)
         print(f'[Epoch {epoch+1}/{num_epochs}] Loss: {loss} | Train: {acc_train:.3f} | Test: {acc_test:.3f}')
-
-def run(train_dataset, test_dataset):
-
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
-
-    model = GraphClassificationModel(torch_geometric.nn.GCNConv)
-    print(model)
-    train(model, train_loader, test_loader, num_epochs=100)
-
-    return model

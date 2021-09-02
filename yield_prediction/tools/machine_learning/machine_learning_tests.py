@@ -26,7 +26,9 @@ from tools.machine_learning.kernels import kernel
 from tools.utils.plotting import plotting
 from tools.machine_learning import gnn
 import torch
+import torch_geometric
 from torch_geometric.utils import from_networkx
+from torch_geometric.data import DataLoader
 import networkx as nx
 
 
@@ -149,6 +151,10 @@ class machine_learning():
         if y_test is None:
             y_test = self.y_test
 
+        #for index, value in y_train.items():
+        #    print(f"Index : {index}, Value : {value}")
+        #    print(y_train[index])
+
         train_dataset = {}
         for molg_type in X_train:
             train_dataset[molg_type] = []
@@ -161,18 +167,63 @@ class machine_learning():
                 #print(g)
                 #print("g", g.to_dict())
                 x = self.ohe(g)
-                g.__setitem__('x', torch.tensor(x))
+                g.__setitem__('x', torch.tensor(x.astype(np.float32)))
+                y = [y_train[index].astype(np.float32)] # not correct because y is the combination of the 4 molecules
+                #print(y)
+                g.__setitem__('y', torch.tensor(y))
                 #print("g", g)
                 #print("g", g.to_dict())
+                delattr(g, 'symbol') # try without this
+                delattr(g, 'bond_type') # try without this
                 train_dataset[molg_type].append(g)
                 #print(f"Index : {index}, Value : {type(value)}")
 
-        #print(X_train.iloc[0]['additive_molg'].nodes(data=True))
-        #print(y_test.iloc[0])
+        test_dataset = {}
+        for molg_type in X_test:
+            test_dataset[molg_type] = []
+            for index, value in X_test[molg_type].items():
+                g = from_networkx(value)
+                x = self.ohe(g)
+                g.__setitem__('x', torch.tensor(x.astype(np.float32)))
+                y = [y_test[index].astype(np.float32)] # not correct because y is the combination of the 4 molecules
+                g.__setitem__('y', torch.tensor(y))
+                delattr(g, 'symbol') # try without this
+                delattr(g, 'bond_type') # try without this
+                test_dataset[molg_type].append(g)
+        
+        print(train_dataset['additive_molg'][0])
+        #print(test_dataset['additive_molg'][0])
+        #print(train_dataset['additive_molg'][0].__getitem__('y'))
+        #print(train_dataset['additive_molg'][0].__getitem__('x'))
 
-        print(train_dataset['additive_molg'][0].to_dict())
+        
+        #for molg_type in train_dataset:
+        #    train_loader = DataLoader(train_dataset[molg_type], batch_size=64, shuffle=True)
+        #    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
+        train_loader = DataLoader(train_dataset['additive_molg'], batch_size=64, shuffle=True)
+        test_loader = DataLoader(test_dataset['additive_molg'], batch_size=64, shuffle=False)
+
+        '''
+        for idx, data in enumerate(train_loader):
+            # data is of type 'Batch'
+            print(type(data))
+            print(f'Batch {idx} size: {data.num_graphs}')
+
+            # apart from edge_index, x, and y, that we would expect
+            # a Batch object has a 'batch' property, mapping each node to its component (the original graph)
+            # and a 'ptr' property, marking the boundaries between components
+            print(data)
+            if idx == 2:
+                print(data.batch)
+                print(data.ptr)
+            print()
+        '''
+        
         model = self.models['Graph Neural Network']
+        print(model)
+        gnn.train(model, train_loader, test_loader, num_epochs=100)
+        print("FINITO")
             
         kernel_name = kernel_params['kernel_name']
         graph_kernel = kernel(kernel_name)
@@ -754,7 +805,7 @@ models = {
             'ensemble', 'GradientBoostingRegressor'),
     'Decision Tree': model_selection.model_selector(
             'tree', 'DecisionTreeRegressor'),
-    'Graph Neural Network': gnn.GraphClassificationModel(gnn.torch_geometric.nn.GCNConv)
+    'Graph Neural Network': gnn.GraphRegressionModel(gnn.LinearLayer) # torch_geometric.nn.GCNConv
     }
 
 param_grid = {
