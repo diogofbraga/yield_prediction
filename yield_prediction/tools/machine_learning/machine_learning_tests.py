@@ -155,9 +155,9 @@ class machine_learning():
         #    print(f"Index : {index}, Value : {value}")
         #    print(y_train[index])
 
-        train_dataset = {}
+        train_dataset = []
         for molg_type in X_train:
-            train_dataset[molg_type] = []
+            i = 0
             for index, value in X_train[molg_type].items():
                 #print("Value", value)
                 #print("nodes", value.nodes(data=True))
@@ -168,41 +168,41 @@ class machine_learning():
                 #print("g", g.to_dict())
                 x = self.ohe(g)
                 g.__setitem__('x', torch.tensor(x.astype(np.float32)))
-                y = [y_train[index].astype(np.float32)] # not correct because y is the combination of the 4 molecules
-                #print(y)
-                g.__setitem__('y', torch.tensor(y))
+                #y = [y_train[index].astype(np.float32)] # not correct because y is the combination of the 4 molecules
+                #g.__setitem__('y', torch.tensor(y))
                 #print("g", g)
                 #print("g", g.to_dict())
                 delattr(g, 'symbol') # try without this
                 delattr(g, 'bond_type') # try without this
-                train_dataset[molg_type].append(g)
+                if molg_type == 'additive_molg':
+                    train_dataset.append({'y': torch.tensor([y_train[index].astype(np.float32)])})
+                train_dataset[i].update({molg_type: g})
+                i = i+1
                 #print(f"Index : {index}, Value : {type(value)}")
 
-        test_dataset = {}
+        test_dataset = []
         for molg_type in X_test:
-            test_dataset[molg_type] = []
+            i = 0
             for index, value in X_test[molg_type].items():
                 g = from_networkx(value)
                 x = self.ohe(g)
                 g.__setitem__('x', torch.tensor(x.astype(np.float32)))
-                y = [y_test[index].astype(np.float32)] # not correct because y is the combination of the 4 molecules
-                g.__setitem__('y', torch.tensor(y))
                 delattr(g, 'symbol') # try without this
                 delattr(g, 'bond_type') # try without this
-                test_dataset[molg_type].append(g)
+                if molg_type == 'additive_molg':
+                    test_dataset.append({'y': torch.tensor([y_test[index].astype(np.float32)])})
+                test_dataset[i].update({molg_type: g})
+                i = i+1
         
-        print(train_dataset['additive_molg'][0])
+        #print(train_dataset[0])
+        #print(train_dataset[len(train_dataset)-1])
         #print(test_dataset['additive_molg'][0])
         #print(train_dataset['additive_molg'][0].__getitem__('y'))
         #print(train_dataset['additive_molg'][0].__getitem__('x'))
 
-        
-        #for molg_type in train_dataset:
-        #    train_loader = DataLoader(train_dataset[molg_type], batch_size=64, shuffle=True)
-        #    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
-
-        train_loader = DataLoader(train_dataset['additive_molg'], batch_size=64, shuffle=True)
-        test_loader = DataLoader(test_dataset['additive_molg'], batch_size=64, shuffle=False)
+    
+        train_loader = DataLoader(train_dataset, batch_size=64, shuffle=False) # shuffle=True
+        test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
         '''
         for idx, data in enumerate(train_loader):
