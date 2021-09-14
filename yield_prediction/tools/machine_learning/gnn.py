@@ -100,13 +100,11 @@ def train(model, train_loader, test_loader, num_epochs):
 
     # A utility function to compute the accuracy
     def get_acc(model, loader):
-        n_total = 0
-        n_ok = 0
         for data in loader:
             outs = model(data.x, data.edge_index, data.batch).squeeze()
-            n_ok += ((outs>0) == data.y).sum().item()
-            n_total += data.y.shape[0]
-        return n_ok/n_total
+            mse = ((outs - data.y)**2).mean(axis=0).item()
+            rmse = np.sqrt(mse)
+        return rmse
 
     for epoch in range(num_epochs):
         for data in train_loader:
@@ -114,12 +112,14 @@ def train(model, train_loader, test_loader, num_epochs):
             optimizer.zero_grad()
             outs = model(data.x, data.edge_index, data.batch).squeeze()
             #print("outs: \n", outs)
+            #print(data.x.size())
+            #print(outs.size())
             loss = loss_fn(outs, data.y.float()) # no train_mask!
             #print("loss: \n", loss)
             loss.backward()
             optimizer.step()
 
         # Compute accuracies
-        acc_train = get_acc(model, train_loader)
-        acc_test = get_acc(model, test_loader)
-        print(f'[Epoch {epoch+1}/{num_epochs}] Loss: {loss} | Train: {acc_train:.3f} | Test: {acc_test:.3f}')
+        rmse_train = get_acc(model, train_loader)
+        rmse_test = get_acc(model, test_loader)
+        print(f'[Epoch {epoch+1}/{num_epochs}] Loss: {loss} | Train RMSE: {rmse_train:.3f} | Test RMSE: {rmse_test:.3f}') 
