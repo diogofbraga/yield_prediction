@@ -151,6 +151,9 @@ class machine_learning():
         if y_test is None:
             y_test = self.y_test
 
+        #print(X_train.iloc[0]['additive_molg'].nodes(data=True))
+        #print(X_train.iloc[0]['additive_molg'].edges(data=True))
+
         #for index, value in y_train.items():
         #    print(f"Index : {index}, Value : {value}")
         #    print(y_train[index])
@@ -167,7 +170,7 @@ class machine_learning():
                 #print(g)
                 #print("g", g.to_dict())
                 x = self.ohe(g)
-                g.__setitem__('x', torch.tensor(x.astype(np.float32)))
+                g.__setitem__('x', torch.tensor(x, dtype=torch.float32))
                 #y = [y_train[index].astype(np.float32)] # not correct because y is the combination of the 4 molecules
                 #g.__setitem__('y', torch.tensor(y))
                 #print("g", g)
@@ -175,7 +178,7 @@ class machine_learning():
                 delattr(g, 'symbol') # try without this
                 delattr(g, 'bond_type') # try without this
                 if molg_type == 'additive_molg':
-                    train_dataset.append({'y': torch.tensor([y_train[index].astype(np.float32)])})
+                    train_dataset.append({'y': torch.tensor(y_train[index], dtype=torch.float32)})
                 train_dataset[i].update({molg_type: g})
                 i = i+1
                 #print(f"Index : {index}, Value : {type(value)}")
@@ -186,29 +189,26 @@ class machine_learning():
             for index, value in X_test[molg_type].items():
                 g = from_networkx(value)
                 x = self.ohe(g)
-                g.__setitem__('x', torch.tensor(x.astype(np.float32)))
+                g.__setitem__('x', torch.tensor(x, dtype=torch.float32))
                 delattr(g, 'symbol') # try without this
                 delattr(g, 'bond_type') # try without this
                 if molg_type == 'additive_molg':
-                    test_dataset.append({'y': torch.tensor([y_test[index].astype(np.float32)])})
+                    test_dataset.append({'y': torch.tensor(y_test[index], dtype=torch.float32)})
                 test_dataset[i].update({molg_type: g})
                 i = i+1
         
         #print(train_dataset[0])
-        #print(train_dataset[len(train_dataset)-1])
-        #print(test_dataset['additive_molg'][0])
-        #print(train_dataset['additive_molg'][0].__getitem__('y'))
-        #print(train_dataset['additive_molg'][0].__getitem__('x'))
+        #print(train_dataset[0]['additive_molg'].__getitem__('x'))
 
     
-        train_loader = DataLoader(train_dataset, batch_size=64, shuffle=False) # shuffle=True
+        train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
         test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
         '''
         for idx, data in enumerate(train_loader):
             # data is of type 'Batch'
             print(type(data))
-            print(f'Batch {idx} size: {data.num_graphs}')
+            #print(f'Batch {idx} size: {data.num_graphs}')
 
             # apart from edge_index, x, and y, that we would expect
             # a Batch object has a 'batch' property, mapping each node to its component (the original graph)
@@ -219,6 +219,7 @@ class machine_learning():
                 print(data.ptr)
             print()
         '''
+        
         
         model = self.models['Graph Neural Network']
         print(model)
@@ -940,6 +941,7 @@ def out_of_sample(
     Perform the out-of-sample test.
     
     """
+
     print('\n#### OUT-OF-SAMPLE TEST STARTED ####' + 
           '\nDescriptor Type: {}'.format(X_type) +
           '\nReaction Component: {}'.format(rxn_component) +

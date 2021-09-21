@@ -113,19 +113,15 @@ def main():
         )
     info['one-hot']['kwargs'] = None
     '''
-    mode = 'gnn' # 'grakel'
+    mode = 'gnn' # 'gnn'/'grakel'
     graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles, mode)
     #print(graphs.iloc[0]['additive_molg'].get_adjacency_matrix())
     #print(graphs.iloc[0]['additive_molg'].get_edge_dictionary())
     #print(graphs.iloc[0]['additive_molg'].get_vertices())
     #print(graphs.iloc[0]['additive_molg'].get_edges())
+    #print(graphs.iloc[0]['additive_molg'].get_labels())
     #print(graphs.iloc[0]['additive_molg'].nodes(data=True))
     #print(graphs.iloc[0]['additive_molg'].edges(data=True))
-    #g = nx.Graph()
-    #g = nx.convert_node_labels_to_integers(graphs.iloc[0]['additive_molg'])
-    #print("Label", g)
-    #print(g.nodes(data=True))
-    #print(g.edges(data=True))
 
     info['graphs_gnn'] = defaultdict()
     info['graphs_gnn']['dir'] = 'graph_descriptors/WL_gnn'
