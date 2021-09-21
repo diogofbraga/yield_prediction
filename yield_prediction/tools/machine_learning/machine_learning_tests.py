@@ -139,7 +139,6 @@ class machine_learning():
         #print(result)
         return result
         
-
     def process_gnn(self, X_train=None, X_test=None, y_train=None, y_test=None,
                                      kernel_params={}):
         if X_train is None:
@@ -170,13 +169,17 @@ class machine_learning():
                 #print(g)
                 #print("g", g.to_dict())
                 x = self.ohe(g)
-                g.__setitem__('x', torch.tensor(x, dtype=torch.float32))
+                g.__setitem__('x', torch.tensor(x, dtype=torch.float32, requires_grad=True))
+                edge_index = g.__getitem__('edge_index')
+                delattr(g, 'edge_index')
+                sub = edge_index.detach().numpy()
+                g.__setitem__('edge_index', torch.tensor(sub, dtype=torch.float32, requires_grad=True))
                 #y = [y_train[index].astype(np.float32)] # not correct because y is the combination of the 4 molecules
                 #g.__setitem__('y', torch.tensor(y))
-                #print("g", g)
-                #print("g", g.to_dict())
                 delattr(g, 'symbol') # try without this
                 delattr(g, 'bond_type') # try without this
+                #print("g", g)
+                #print("g", g.to_dict())
                 if molg_type == 'additive_molg':
                     train_dataset.append({'y': torch.tensor(y_train[index], dtype=torch.float32)})
                 train_dataset[i].update({molg_type: g})
@@ -189,7 +192,11 @@ class machine_learning():
             for index, value in X_test[molg_type].items():
                 g = from_networkx(value)
                 x = self.ohe(g)
-                g.__setitem__('x', torch.tensor(x, dtype=torch.float32))
+                g.__setitem__('x', torch.tensor(x, dtype=torch.float32, requires_grad=True))
+                edge_index = g.__getitem__('edge_index')
+                delattr(g, 'edge_index')
+                sub = edge_index.detach().numpy()
+                g.__setitem__('edge_index', torch.tensor(sub, dtype=torch.float32, requires_grad=True))
                 delattr(g, 'symbol') # try without this
                 delattr(g, 'bond_type') # try without this
                 if molg_type == 'additive_molg':
@@ -223,20 +230,8 @@ class machine_learning():
         
         model = self.models['Graph Neural Network']
         print(model)
-        gnn.train(model, train_loader, test_loader, num_epochs=100)
-        print("FINITO")
-            
-        kernel_name = kernel_params['kernel_name']
-        graph_kernel = kernel(kernel_name)
-
-        # Create graph kernel matricies for the train and test set.
+        return gnn.train(model, train_loader, test_loader, num_epochs=20)         
         
-        k_train, k_test = graph_kernel.gnn_multiple_descriptor_types(
-            X_train, X_test, y_train, y_test, n_jobs=n_jobs, **kernel_params)
-        
-        self.X_train = pd.DataFrame(k_train, index=X_train.index)
-        if X_test is not None:
-            self.X_test = pd.DataFrame(k_test, index=X_test.index)
         
     def preprocess_fingerprint_descriptors(self, X_train=None, X_test=None):
         if X_train is None:
@@ -931,7 +926,7 @@ def in_sample(X, y, models, param_grid, X_type, saveas, save_plots=False,
     
     return in_sample_results
 
-
+gnn_results = []
 def out_of_sample(
         X, y, models, param_grid, X_type, molecule_test_list, molecule_keys, 
         rxn_component, saveas=None, save_plots=False, 
@@ -974,7 +969,11 @@ def out_of_sample(
         elif X.iloc[0].dtypes == object:
             out_of_sample_test.preprocess_fingerprint_descriptors()
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
-        out_of_sample_test.process_gnn()
+        loss, r2_train, r2_test, rmse_train, rmse_test = out_of_sample_test.process_gnn()
+        print('\nGNN Results:')
+        gnn_results.append({'test': saveas[10:], 'loss': loss, 'r2_train': r2_train, 'r2_test': r2_test, 'rmse_train': rmse_train, 'rmse_test': rmse_test})
+        print(gnn_results)
+        return 0
 
     
     print('\nStep 3: Tuning hyperparameters and predicting yeild.')
