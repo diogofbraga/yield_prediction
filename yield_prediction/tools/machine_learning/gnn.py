@@ -90,7 +90,7 @@ class GraphRegressionModel(torch.nn.Module):
         self.layers = nn.ModuleList(layers)
 
         # Final classificator
-        self.f = nn.Linear(sz_hid, sz_out)
+        self.f = nn.Linear(sz_hid, sz_out) # Maybe change this (?)
     
     def forward(self, fts, adj, batch):
         # 1: obtain node latents
@@ -170,6 +170,6 @@ def train(model, train_loader, test_loader, num_epochs):
         # Compute accuracies
         r2_train, rmse_train = get_acc(model, train_loader)
         r2_test, rmse_test = get_acc(model, test_loader)
-        print(f'[Epoch {epoch+1}/{num_epochs}] Loss in Epoch: {loss:.3f} | Running Loss: {running_loss/len(train_loader):.3f} | Train R-squared: {r2_train:.3f} | Test R-squared: {r2_test:.3f} | Train RMSE: {rmse_train:.3f} | Test RMSE: {rmse_test:.3f}') 
+        print(f'[Epoch {epoch+1}/{num_epochs}] Loss: {running_loss/len(train_loader):.3f} | Train R-squared: {r2_train:.3f} | Test R-squared: {r2_test:.3f} | Train RMSE: {rmse_train:.3f} | Test RMSE: {rmse_test:.3f}') 
 
     return round(running_loss/len(train_loader),3), round(r2_train,3), round(r2_test,3), round(rmse_train,3), round(rmse_test,3)

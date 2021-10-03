@@ -170,6 +170,44 @@ class machine_learning():
                 #print("g", g.to_dict())
                 x = self.ohe(g)
                 g.__setitem__('x', torch.tensor(x, dtype=torch.float32, requires_grad=True))
+                #y = [y_train[index].astype(np.float32)] # not correct because y is the combination of the 4 molecules
+                #g.__setitem__('y', torch.tensor(y))
+                #print("g", g)
+                #print("g", g.to_dict())
+                delattr(g, 'symbol') # try without this
+                delattr(g, 'bond_type') # try without this
+                if molg_type == 'additive_molg':
+                    train_dataset.append({'y': torch.tensor(y_train[index], dtype=torch.float32)})
+                train_dataset[i].update({molg_type: g})
+                i = i+1
+                #print(f"Index : {index}, Value : {type(value)}")
+
+        test_dataset = []
+        for molg_type in X_test:
+            i = 0
+            for index, value in X_test[molg_type].items():
+                g = from_networkx(value)
+                x = self.ohe(g)
+                g.__setitem__('x', torch.tensor(x, dtype=torch.float32, requires_grad=True))
+                delattr(g, 'symbol') # try without this
+                delattr(g, 'bond_type') # try without this
+                if molg_type == 'additive_molg':
+                    test_dataset.append({'y': torch.tensor(y_test[index], dtype=torch.float32)})
+                test_dataset[i].update({molg_type: g})
+                i = i+1
+
+
+        '''
+            for index, value in X_train[molg_type].items():
+                #print("Value", value)
+                #print("nodes", value.nodes(data=True))
+                #print("edges", value.edges(data=True))
+                #print(value)
+                g = from_networkx(value)
+                #print(g)
+                #print("g", g.to_dict())
+                x = self.ohe(g)
+                g.__setitem__('x', torch.tensor(x, dtype=torch.float32, requires_grad=True))
                 edge_index = g.__getitem__('edge_index')
                 delattr(g, 'edge_index')
                 sub = edge_index.detach().numpy()
@@ -185,24 +223,7 @@ class machine_learning():
                 train_dataset[i].update({molg_type: g})
                 i = i+1
                 #print(f"Index : {index}, Value : {type(value)}")
-
-        test_dataset = []
-        for molg_type in X_test:
-            i = 0
-            for index, value in X_test[molg_type].items():
-                g = from_networkx(value)
-                x = self.ohe(g)
-                g.__setitem__('x', torch.tensor(x, dtype=torch.float32, requires_grad=True))
-                edge_index = g.__getitem__('edge_index')
-                delattr(g, 'edge_index')
-                sub = edge_index.detach().numpy()
-                g.__setitem__('edge_index', torch.tensor(sub, dtype=torch.float32, requires_grad=True))
-                delattr(g, 'symbol') # try without this
-                delattr(g, 'bond_type') # try without this
-                if molg_type == 'additive_molg':
-                    test_dataset.append({'y': torch.tensor(y_test[index], dtype=torch.float32)})
-                test_dataset[i].update({molg_type: g})
-                i = i+1
+        '''
         
         #print(train_dataset[0])
         #print(train_dataset[0]['additive_molg'].__getitem__('x'))
@@ -801,7 +822,7 @@ models = {
             'ensemble', 'GradientBoostingRegressor'),
     'Decision Tree': model_selection.model_selector(
             'tree', 'DecisionTreeRegressor'),
-    'Graph Neural Network': gnn.GraphRegressionModel(gnn.LinearLayer) # torch_geometric.nn.GCNConv
+    'Graph Neural Network': gnn.GraphRegressionModel(torch_geometric.nn.GCNConv) # gnn.LinearLayer torch_geometric.nn.GCNConv
     }
 
 param_grid = {
