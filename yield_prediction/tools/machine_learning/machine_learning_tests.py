@@ -247,11 +247,16 @@ class machine_learning():
                 print(data.ptr)
             print()
         '''
+        parameters_num_layers = [3, 4, 5]
+        parameters_learning_rate = [0.1, 0.01, 0.001]
 
-        model = GraphRegressionModel(torch_geometric.nn.GCNConv) # gnn.LinearLayer torch_geometric.nn.GCNConv
-        print("Id model:", id(model))
-        print(model)
-        return train(model, train_loader, test_loader, num_epochs=20)     
+        for num_layers in parameters_num_layers:
+            for learning_rate in parameters_learning_rate:
+                model = GraphRegressionModel(torch_geometric.nn.GCNConv, num_layers) # gnn.LinearLayer torch_geometric.nn.GCNConv
+                print("Id model:", id(model))
+                print(model)
+                loss, r2_train, r2_test, rmse_train, rmse_test = train(model, train_loader, test_loader, num_epochs=100, lr=learning_rate)
+                return loss, r2_train, r2_test, rmse_train, rmse_test, num_layers, learning_rate  
         
         
     def preprocess_fingerprint_descriptors(self, X_train=None, X_test=None):
@@ -990,10 +995,20 @@ def out_of_sample(
         elif X.iloc[0].dtypes == object:
             out_of_sample_test.preprocess_fingerprint_descriptors()
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
-        loss, r2_train, r2_test, rmse_train, rmse_test = out_of_sample_test.process_gnn()
+        loss, r2_train, r2_test, rmse_train, rmse_test, num_layers, learning_rate = out_of_sample_test.process_gnn()
+
+        # Results to Excel
+        path = saveas[49:]
+        res = path.split("/")
+        gnn_results.append({'molecule': res[0], 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'loss': loss, 'r2_train': r2_train, 'r2_test': r2_test, 'rmse_train': rmse_train, 'rmse_test': rmse_test})
+        
         print('\nGNN Results:')
-        gnn_results.append({'test': saveas[10:], 'loss': loss, 'r2_train': r2_train, 'r2_test': r2_test, 'rmse_train': rmse_train, 'rmse_test': rmse_test})
         print(gnn_results)
+
+        df = pd.DataFrame.from_dict(gnn_results)
+        df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate'], ascending=True)
+        df.to_excel('results/gnn_results.xlsx', index=False)
+
         return 0
 
     

@@ -110,10 +110,10 @@ class GraphRegressionModel(torch.nn.Module):
         return self.f(h)
 
 # Train the given model on the given dataset for num_epochs
-def train(model, train_loader, test_loader, num_epochs):
+def train(model, train_loader, test_loader, num_epochs, lr):
     # Set up the loss and the optimizer
     loss_fn = nn.MSELoss() #ReactionMSEloss.apply #BCEWithLogitsLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
     best_rmse_test = 1000
 
     # A utility function to compute the accuracy
