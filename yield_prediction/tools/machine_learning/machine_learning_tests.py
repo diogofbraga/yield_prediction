@@ -24,7 +24,7 @@ from tools.data.rdkit_tools import caluclate_tanimoto
 from tools.machine_learning import model_selection
 from tools.machine_learning.kernels import kernel
 from tools.utils.plotting import plotting
-from tools.machine_learning import gnn
+from tools.machine_learning.gnn import GraphRegressionModel, train
 import torch
 import torch_geometric
 from torch_geometric.utils import from_networkx
@@ -247,11 +247,11 @@ class machine_learning():
                 print(data.ptr)
             print()
         '''
-        
-        
-        model = self.models['Graph Neural Network']
+
+        model = GraphRegressionModel(torch_geometric.nn.GCNConv) # gnn.LinearLayer torch_geometric.nn.GCNConv
+        print("Id model:", id(model))
         print(model)
-        return gnn.train(model, train_loader, test_loader, num_epochs=20)         
+        return train(model, train_loader, test_loader, num_epochs=20)     
         
         
     def preprocess_fingerprint_descriptors(self, X_train=None, X_test=None):
@@ -822,7 +822,7 @@ models = {
             'ensemble', 'GradientBoostingRegressor'),
     'Decision Tree': model_selection.model_selector(
             'tree', 'DecisionTreeRegressor'),
-    'Graph Neural Network': gnn.GraphRegressionModel(torch_geometric.nn.GCNConv) # gnn.LinearLayer torch_geometric.nn.GCNConv
+    'Graph Neural Network': {} # We create the object instance later, in order to produce a network for each test
     }
 
 param_grid = {

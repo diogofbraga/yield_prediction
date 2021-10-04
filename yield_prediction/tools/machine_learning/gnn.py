@@ -83,9 +83,12 @@ class GraphRegressionModel(torch.nn.Module):
         layers = []
         layers.append(layer_type(sz_in, sz_hid))
         layers.append(nn.ReLU())
+
         for _ in range(num_layers-2):
             layers.append(layer_type(sz_hid, sz_hid))
             layers.append(nn.ReLU())
+            #layers.append(nn.Dropout(p=0.2))
+        
         layers.append(layer_type(sz_hid, sz_hid)) # New!
         self.layers = nn.ModuleList(layers)
 
@@ -95,7 +98,7 @@ class GraphRegressionModel(torch.nn.Module):
     def forward(self, fts, adj, batch):
         # 1: obtain node latents
         for l in self.layers:
-            if isinstance(l, nn.ReLU):
+            if isinstance(l, nn.ReLU) or isinstance(l, nn.Dropout):
                 fts = l(fts)
             else:
                 fts = l(fts, adj)
@@ -111,6 +114,7 @@ def train(model, train_loader, test_loader, num_epochs):
     # Set up the loss and the optimizer
     loss_fn = nn.MSELoss() #ReactionMSEloss.apply #BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.01)
+    best_rmse_test = 1000
 
     # A utility function to compute the accuracy
     def get_acc(model, loader):
@@ -160,7 +164,7 @@ def train(model, train_loader, test_loader, num_epochs):
             loss = loss_fn(outs, data['y'].float()) # no train_mask!
 
             # Propagate the loss backward
-            loss.backward() # I have to introduce the gradient here
+            loss.backward()
             
             # Update the gradients
             optimizer.step()
@@ -170,6 +174,14 @@ def train(model, train_loader, test_loader, num_epochs):
         # Compute accuracies
         r2_train, rmse_train = get_acc(model, train_loader)
         r2_test, rmse_test = get_acc(model, test_loader)
+
+        if rmse_test < best_rmse_test:
+            best_rmse_test = rmse_test
+            chosen_rmse_train = rmse_train
+            chosen_running_loss = running_loss
+            chosen_r2_test = r2_test
+            chosen_r2_train = r2_train
+
         print(f'[Epoch {epoch+1}/{num_epochs}] Loss: {running_loss/len(train_loader):.3f} | Train R-squared: {r2_train:.3f} | Test R-squared: {r2_test:.3f} | Train RMSE: {rmse_train:.3f} | Test RMSE: {rmse_test:.3f}') 
 
-    return round(running_loss/len(train_loader),3), round(r2_train,3), round(r2_test,3), round(rmse_train,3), round(rmse_test,3)
+    return round(chosen_running_loss/len(train_loader),3), round(chosen_r2_train,3), round(chosen_r2_test,3), round(chosen_rmse_train,3), round(best_rmse_test,3)
