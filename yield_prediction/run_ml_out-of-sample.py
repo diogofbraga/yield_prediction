@@ -380,10 +380,10 @@ def main():
             ranked_mols=ranked_mols[rxn_component]
             )
         
-        mol_sets = [mols_plate1, mols_plate2, mols_plate3]
+        mol_sets = [] #[mols_plate1, mols_plate2, mols_plate3]
         mol_sets.extend(additive_ranking.values())
         
-        names = ['plate_1', 'plate_2', 'plate_3']
+        names = [] #['plate_1', 'plate_2', 'plate_3']
         names.extend(
             ['ranking_test{}'.format(i) for i in additive_ranking.keys()]
             )
@@ -427,11 +427,11 @@ def main():
             n_sets=3
             )
         
-        mol_sets = [mols_Cl, mols_Br, mols_I, mols_phenyl, mols_pyridyl]
+        mol_sets = [] #[mols_Cl, mols_Br, mols_I, mols_phenyl, mols_pyridyl]
         mol_sets.extend(aryl_halide_ranking.values())
         
-        names = ['halide_test_Cl', 'halide_test_Br', 'halide_test_I', 
-                 'aryl_test_phenyl', 'aryl_test_pyridyl']
+        names = [] #['halide_test_Cl', 'halide_test_Br', 'halide_test_I', 
+                 #'aryl_test_phenyl', 'aryl_test_pyridyl']
         names.extend(
             ['ranking_test{}'.format(i) for i in aryl_halide_ranking.keys()]
             )
@@ -459,6 +459,7 @@ def main():
                 kwargs=info_d['kwargs']
                 )
         
+        '''
         # Leave-one-out Tests.
         test_name = 'out_of_sample'
         
@@ -484,7 +485,7 @@ def main():
                     save_model=False,
                     kwargs=info_d['kwargs']
                     )
-        
+        '''
             
 if __name__ == '__main__':
     main()

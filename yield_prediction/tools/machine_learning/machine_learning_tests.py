@@ -139,8 +139,7 @@ class machine_learning():
         #print(result)
         return result
         
-    def process_gnn(self, X_train=None, X_test=None, y_train=None, y_test=None,
-                                     kernel_params={}):
+    def process_gnn(self, num_layers=3, learning_rate=0.1, X_train=None, X_test=None, y_train=None, y_test=None):
         if X_train is None:
             X_train = self.X_train
         if X_test is None:
@@ -247,16 +246,12 @@ class machine_learning():
                 print(data.ptr)
             print()
         '''
-        parameters_num_layers = [3, 4, 5]
-        parameters_learning_rate = [0.1, 0.01, 0.001]
 
-        for num_layers in parameters_num_layers:
-            for learning_rate in parameters_learning_rate:
-                model = GraphRegressionModel(torch_geometric.nn.GCNConv, num_layers) # gnn.LinearLayer torch_geometric.nn.GCNConv
-                print("Id model:", id(model))
-                print(model)
-                loss, r2_train, r2_test, rmse_train, rmse_test = train(model, train_loader, test_loader, num_epochs=100, lr=learning_rate)
-                return loss, r2_train, r2_test, rmse_train, rmse_test, num_layers, learning_rate  
+        model = GraphRegressionModel(torch_geometric.nn.GCNConv, num_layers) # gnn.LinearLayer torch_geometric.nn.GCNConv
+        print("Id model:", id(model))
+        print(model)
+        loss, r2_train, r2_test, rmse_train, rmse_test = train(model, train_loader, test_loader, num_epochs=100, lr=learning_rate)
+        return loss, r2_train, r2_test, rmse_train, rmse_test, num_layers, learning_rate  
         
         
     def preprocess_fingerprint_descriptors(self, X_train=None, X_test=None):
@@ -995,19 +990,24 @@ def out_of_sample(
         elif X.iloc[0].dtypes == object:
             out_of_sample_test.preprocess_fingerprint_descriptors()
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
-        loss, r2_train, r2_test, rmse_train, rmse_test, num_layers, learning_rate = out_of_sample_test.process_gnn()
 
-        # Results to Excel
-        path = saveas[49:]
-        res = path.split("/")
-        gnn_results.append({'molecule': res[0], 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'loss': loss, 'r2_train': r2_train, 'r2_test': r2_test, 'rmse_train': rmse_train, 'rmse_test': rmse_test})
-        
-        print('\nGNN Results:')
-        print(gnn_results)
+        parameters_num_layers = [3, 4, 5]
+        parameters_learning_rate = [0.01, 0.001]
+        for num_layers in parameters_num_layers:
+            for learning_rate in parameters_learning_rate:
+                loss, r2_train, r2_test, rmse_train, rmse_test, num_layers, learning_rate = out_of_sample_test.process_gnn(num_layers, learning_rate)
 
-        df = pd.DataFrame.from_dict(gnn_results)
-        df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate'], ascending=True)
-        df.to_excel('results/gnn_results.xlsx', index=False)
+                # Results to Excel
+                path = saveas[49:]
+                res = path.split("/")
+                gnn_results.append({'molecule': res[0], 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'loss': loss, 'r2_train': r2_train, 'r2_test': r2_test, 'rmse_train': rmse_train, 'rmse_test': rmse_test})
+                
+                print('\nGNN Results:')
+                print(gnn_results)
+
+                df = pd.DataFrame.from_dict(gnn_results)
+                df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate'], ascending=True)
+                df.to_excel('results/gnn_results.xlsx', index=False)
 
         return 0
 
