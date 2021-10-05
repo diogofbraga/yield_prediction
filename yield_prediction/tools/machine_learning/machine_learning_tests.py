@@ -991,7 +991,7 @@ def out_of_sample(
             out_of_sample_test.preprocess_fingerprint_descriptors()
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
 
-        parameters_num_layers = [3, 4, 5]
+        parameters_num_layers = [2, 3, 4, 5]
         parameters_learning_rate = [0.01, 0.001]
         for num_layers in parameters_num_layers:
             for learning_rate in parameters_learning_rate:
@@ -1007,7 +1007,7 @@ def out_of_sample(
 
                 df = pd.DataFrame.from_dict(gnn_results)
                 df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate'], ascending=True)
-                df.to_excel('results/gnn_results.xlsx', index=False)
+                df.to_excel('results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1]), index=False)
 
         return 0
 
