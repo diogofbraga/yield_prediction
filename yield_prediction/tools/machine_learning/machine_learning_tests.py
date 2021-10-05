@@ -958,6 +958,10 @@ def out_of_sample(
     
     """
 
+    if ('ranking_test1' or 'ranking_test2' or 'ranking_test3') in saveas:
+        print('nop')    
+        return 0
+    
     print('\n#### OUT-OF-SAMPLE TEST STARTED ####' + 
           '\nDescriptor Type: {}'.format(X_type) +
           '\nReaction Component: {}'.format(rxn_component) +
@@ -993,6 +997,7 @@ def out_of_sample(
 
         parameters_num_layers = [2, 3, 4, 5]
         parameters_learning_rate = [0.01, 0.001]
+        
         for num_layers in parameters_num_layers:
             for learning_rate in parameters_learning_rate:
                 loss, r2_train, r2_test, rmse_train, rmse_test, num_layers, learning_rate = out_of_sample_test.process_gnn(num_layers, learning_rate)
