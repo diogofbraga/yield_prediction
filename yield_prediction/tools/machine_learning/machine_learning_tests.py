@@ -956,6 +956,11 @@ def out_of_sample(
     Perform the out-of-sample test.
     
     """
+
+    if 'additive/ranking_test1' in saveas or 'additive/ranking_test2' in saveas:
+        print('nop')    
+        return 0
+
     gnn_results = []
     
     print('\n#### OUT-OF-SAMPLE TEST STARTED ####' + 
