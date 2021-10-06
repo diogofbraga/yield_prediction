@@ -115,6 +115,7 @@ def train(model, train_loader, test_loader, num_epochs, lr):
     loss_fn = nn.MSELoss() #ReactionMSEloss.apply #BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
     best_rmse_test = 1000
+    best_rmse_train = 1000
 
     # A utility function to compute the accuracy
     def get_acc(model, loader):
@@ -177,11 +178,13 @@ def train(model, train_loader, test_loader, num_epochs, lr):
 
         if rmse_test < best_rmse_test:
             best_rmse_test = rmse_test
-            chosen_rmse_train = rmse_train
-            chosen_running_loss = running_loss
             chosen_r2_test = r2_test
+            
+        if rmse_train < best_rmse_train:
+            best_rmse_train = rmse_train
+            chosen_running_loss = running_loss
             chosen_r2_train = r2_train
 
         print(f'[Epoch {epoch+1}/{num_epochs}] Loss: {running_loss/len(train_loader):.3f} | Train R-squared: {r2_train:.3f} | Test R-squared: {r2_test:.3f} | Train RMSE: {rmse_train:.3f} | Test RMSE: {rmse_test:.3f}') 
 
-    return round(chosen_running_loss/len(train_loader),3), round(chosen_r2_train,3), round(chosen_r2_test,3), round(chosen_rmse_train,3), round(best_rmse_test,3)
+    return round(chosen_running_loss/len(train_loader),3), round(chosen_r2_train,3), round(chosen_r2_test,3), round(best_rmse_train,3), round(best_rmse_test,3)
