@@ -957,7 +957,7 @@ def out_of_sample(
     
     """
 
-    if 'additive/ranking_test1' in saveas or 'additive/ranking_test2' in saveas:
+    if 'additive' in saveas or 'aryl_halide/ranking_test1' in saveas or 'aryl_halide/ranking_test2' in saveas:
         print('nop')    
         return 0
 
@@ -996,7 +996,7 @@ def out_of_sample(
             out_of_sample_test.preprocess_fingerprint_descriptors()
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
 
-        parameters_num_layers = [2, 3, 4, 5, 6]
+        parameters_num_layers = [5, 6]
         parameters_learning_rate = [0.01, 0.001]
         
         for num_layers in parameters_num_layers:
