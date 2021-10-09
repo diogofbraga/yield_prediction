@@ -993,7 +993,7 @@ def out_of_sample(
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
 
         parameters_num_layers = [2, 3, 4, 5, 6]
-        parameters_learning_rate = [0.1, 0.01, 0.001]
+        parameters_learning_rate = [0.01, 0.001]
         parameters_graph_readout = ['sum', 'mean', 'max']
         parameters_molecules_combination = ['sum', 'product', 'mean']
         
@@ -1006,7 +1006,7 @@ def out_of_sample(
                         # Results to Excel
                         path = saveas[49:]
                         res = path.split("/")
-                        gnn_results.append({'molecule': res[0], 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'graph_readout': graph_readout, 'molecules_combination': molecules_combination, 'training_loss': loss, 'chosen_r2_train': r2_train, 'best_rmse_train': rmse_train, 'chosen_r2_test': r2_test, 'best_rmse_test': rmse_test})
+                        gnn_results.append({'molecule': res[0], 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'graph_readout': graph_readout, 'molecules_combination': molecules_combination, 'training_loss': loss, 'r2_train': r2_train, 'rmse_train': rmse_train, 'r2_test': r2_test, 'rmse_test': rmse_test})
                         
                         print('\nGNN Results:')
                         print(gnn_results)
