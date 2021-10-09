@@ -139,7 +139,7 @@ class machine_learning():
         #print(result)
         return result
         
-    def process_gnn(self, num_layers=3, learning_rate=0.1, X_train=None, X_test=None, y_train=None, y_test=None):
+    def process_gnn(self, num_layers=3, learning_rate=0.1, graph_readout='mean', molecules_combination='product', X_train=None, X_test=None, y_train=None, y_test=None):
         if X_train is None:
             X_train = self.X_train
         if X_test is None:
@@ -247,11 +247,11 @@ class machine_learning():
             print()
         '''
 
-        model = GraphRegressionModel(torch_geometric.nn.GCNConv, num_layers)
+        model = GraphRegressionModel(torch_geometric.nn.GCNConv, num_layers, graph_readout)
         print("Id model:", id(model))
         print(model)
-        loss, r2_train, r2_test, rmse_train, rmse_test = train(model, train_loader, test_loader, num_epochs=100, lr=learning_rate)
-        return loss, r2_train, r2_test, rmse_train, rmse_test, num_layers, learning_rate  
+        loss, r2_train, rmse_train, r2_test, rmse_test = train(model, train_loader, test_loader, num_epochs=100, lr=learning_rate, mol_comb=molecules_combination)
+        return loss, r2_train, rmse_train, r2_test, rmse_test
         
         
     def preprocess_fingerprint_descriptors(self, X_train=None, X_test=None):
@@ -957,10 +957,6 @@ def out_of_sample(
     
     """
 
-    if 'additive' in saveas or 'aryl_halide/ranking_test1' in saveas or 'aryl_halide/ranking_test2' in saveas:
-        print('nop')    
-        return 0
-
     gnn_results = []
     
     print('\n#### OUT-OF-SAMPLE TEST STARTED ####' + 
@@ -997,23 +993,27 @@ def out_of_sample(
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
 
         parameters_num_layers = [2, 3, 4, 5, 6]
-        parameters_learning_rate = [0.01, 0.001]
+        parameters_learning_rate = [0.1, 0.01, 0.001]
+        parameters_graph_readout = ['sum', 'mean', 'max']
+        parameters_molecules_combination = ['sum', 'product', 'mean']
         
         for num_layers in parameters_num_layers:
             for learning_rate in parameters_learning_rate:
-                loss, r2_train, r2_test, rmse_train, rmse_test, num_layers, learning_rate = out_of_sample_test.process_gnn(num_layers, learning_rate)
+                for graph_readout in parameters_graph_readout:
+                    for molecules_combination in parameters_molecules_combination:
+                        loss, r2_train, rmse_train, r2_test, rmse_test = out_of_sample_test.process_gnn(num_layers, learning_rate, graph_readout, molecules_combination)
+                        
+                        # Results to Excel
+                        path = saveas[49:]
+                        res = path.split("/")
+                        gnn_results.append({'molecule': res[0], 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'graph_readout': graph_readout, 'molecules_combination': molecules_combination, 'training_loss': loss, 'chosen_r2_train': r2_train, 'best_rmse_train': rmse_train, 'chosen_r2_test': r2_test, 'best_rmse_test': rmse_test})
+                        
+                        print('\nGNN Results:')
+                        print(gnn_results)
 
-                # Results to Excel
-                path = saveas[49:]
-                res = path.split("/")
-                gnn_results.append({'molecule': res[0], 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'loss': loss, 'r2_train': r2_train, 'r2_test': r2_test, 'rmse_train': rmse_train, 'rmse_test': rmse_test})
-                
-                print('\nGNN Results:')
-                print(gnn_results)
-
-                df = pd.DataFrame.from_dict(gnn_results)
-                df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate'], ascending=True)
-                df.to_excel('results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1]), index=False)
+                        df = pd.DataFrame.from_dict(gnn_results)
+                        df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate', 'graph_readout', 'molecules_combination'], ascending=True)
+                        df.to_excel('results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1]), index=False)
 
         return 0
 

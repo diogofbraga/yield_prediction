@@ -11,8 +11,10 @@ from torch.autograd import Function
 
 class GraphRegressionModel(torch.nn.Module):
 
-    def __init__(self, layer_type, num_layers=3, sz_in=9, sz_hid=256, sz_out=1):
+    def __init__(self, layer_type, num_layers=3, graph_readout='mean', sz_in=9, sz_hid=256, sz_out=1):
         super().__init__()
+
+        self.graph_readout = graph_readout
 
         layers = []
         layers.append(layer_type(sz_in, sz_hid))
@@ -41,18 +43,23 @@ class GraphRegressionModel(torch.nn.Module):
                 fts = l(fts, adj)
 
         # 2: pool
-        h = torch_geometric.nn.global_mean_pool(fts, batch)
+        if self.graph_readout == 'mean':
+            h = torch_geometric.nn.global_mean_pool(fts, batch)
+        elif self.graph_readout == 'sum':
+            h = torch_geometric.nn.global_add_pool(fts, batch)
+        elif self.graph_readout == 'max':
+            h = torch_geometric.nn.global_max_pool(fts, batch)
 
         # 3: final classifier
         return self.f(h)
 
 # Train the given model on the given dataset for num_epochs
-def train(model, train_loader, test_loader, num_epochs, lr):
+def train(model, train_loader, test_loader, num_epochs, lr, mol_comb):
     # Set up the loss and the optimizer
     loss_fn = nn.MSELoss() #ReactionMSEloss.apply #BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    best_rmse_test = 1000
-    best_rmse_train = 1000
+    best_rmse_test = float("inf")
+    best_rmse_train = float("inf")
 
     # A utility function to compute the accuracy
     def get_acc(model, loader):
@@ -66,7 +73,13 @@ def train(model, train_loader, test_loader, num_epochs, lr):
             base = model(data['base_molg'].x, data['base_molg'].edge_index, data['base_molg'].batch).squeeze()
             ligand = model(data['ligand_molg'].x, data['ligand_molg'].edge_index, data['ligand_molg'].batch).squeeze()
 
-            outs = additive * aryl_halide * base * ligand
+            if mol_comb == 'product':
+                outs = additive * aryl_halide * base * ligand
+            elif mol_comb == 'sum':
+                outs = additive + aryl_halide + base + ligand
+            elif mol_comb == 'mean':
+                sum = additive + aryl_halide + base + ligand
+                outs = sum/4
 
             outs = outs.detach().numpy()
             data['y'] = data['y'].detach().numpy()
@@ -95,13 +108,17 @@ def train(model, train_loader, test_loader, num_epochs, lr):
             base = model(data['base_molg'].x, data['base_molg'].edge_index, data['base_molg'].batch).squeeze()
             ligand = model(data['ligand_molg'].x, data['ligand_molg'].edge_index, data['ligand_molg'].batch).squeeze()
 
-            outs = additive * aryl_halide * base * ligand
+            if mol_comb == 'product':
+                outs = additive * aryl_halide * base * ligand
+            elif mol_comb == 'sum':
+                outs = additive + aryl_halide + base + ligand
+            elif mol_comb == 'mean':
+                sum = additive + aryl_halide + base + ligand
+                outs = sum/4
             #print(f"outs -> data: {outs.data}\nrequires_grad: {outs.requires_grad}\n grad: {outs.grad}\ngrad_fn: {outs.grad_fn}\nis_leaf: {outs.is_leaf}\n")
             #print("next functions", outs.grad_fn.next_functions)
 
             loss = loss_fn(outs, data['y'].float()) # no train_mask!
-
-            #print(additive, outs, loss)
 
             # Propagate the loss backward
             loss.backward()
@@ -124,6 +141,6 @@ def train(model, train_loader, test_loader, num_epochs, lr):
             chosen_running_loss = running_loss
             chosen_r2_train = r2_train
 
-        print(f'[Epoch {epoch+1}/{num_epochs}] Loss: {running_loss/len(train_loader):.3f} | Train R-squared: {r2_train:.3f} | Test R-squared: {r2_test:.3f} | Train RMSE: {rmse_train:.3f} | Test RMSE: {rmse_test:.3f}') 
+        print(f'[Epoch {epoch+1}/{num_epochs}] Loss: {running_loss/len(train_loader):.3f} | Train R-squared: {r2_train:.3f} | Train RMSE: {rmse_train:.3f} | Test R-squared: {r2_test:.3f} | Test RMSE: {rmse_test:.3f}') 
 
-    return round(chosen_running_loss/len(train_loader),3), round(chosen_r2_train,3), round(chosen_r2_test,3), round(best_rmse_train,3), round(best_rmse_test,3)
+    return round(chosen_running_loss/len(train_loader),3), round(chosen_r2_train,3), round(best_rmse_train,3), round(chosen_r2_test,3), round(best_rmse_test,3)
