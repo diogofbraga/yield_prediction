@@ -9,20 +9,6 @@ import numpy as np
 from sklearn.metrics import r2_score, mean_squared_error
 from torch.autograd import Function
 
-class SumPoolLayer(torch.nn.Module):
-    # sz_in=F, sz_out=F'
-    # we will apply the nonlinearity later
-    def __init__(self, sz_in, sz_out):
-        super().__init__()
-        self.W = nn.Parameter(torch.empty(size=(sz_in, sz_out)))
-        nn.init.xavier_uniform_(self.W.data)
-    
-    # Propagation rule: H' = sigma(AHW) 
-    def forward(self, fts, adj):
-        new_fts = torch.mm(fts, self.W)
-        ret_fts = torch.mm(adj, new_fts)
-        return ret_fts
-
 class LinearLayer(torch.nn.Module):
     def __init__(self, sz_in, sz_out):
         super().__init__()
@@ -34,45 +20,6 @@ class LinearLayer(torch.nn.Module):
         new_fts = torch.mm(fts, self.W)
         return new_fts
 
-class MeanPoolLayer(torch.nn.Module):
-    def __init__(self, sz_in, sz_out):
-        super().__init__()
-        self.W = nn.Parameter(torch.empty(size=(sz_in, sz_out)))
-        nn.init.xavier_uniform_(self.W.data)
-    
-    def forward(self, fts, adj):
-        new_fts = torch.mm(fts, self.W)
-        deg = adj.sum(axis=1) # New!
-        ret_fts = torch.mm(adj/deg, new_fts) # New!
-        return ret_fts
-
-class GCNLayer(torch.nn.Module):
-    def __init__(self, sz_in, sz_out):
-        super().__init__()
-        self.W = nn.Parameter(torch.empty(size=(sz_in, sz_out)))
-        nn.init.xavier_uniform_(self.W.data)
-    
-    def forward(self, fts, adj):
-        new_fts = torch.mm(fts, self.W)
-
-        deg = adj.sum(axis=1)
-        deg_inv_half = torch.diag(1.0 / torch.sqrt(deg)) # New!
-        adj_norm = deg_inv_half @ adj @ deg_inv_half # New!
-        
-        ret_fts = torch.mm(adj_norm, new_fts) # New!
-        return ret_fts
-
-class ReactionMSEloss(Function):
-    @staticmethod
-    def forward(ctx, y_pred, y):    
-        ctx.save_for_backward(y_pred, y)
-        return ( (y - y_pred)**2 ).mean()
-        
-    @staticmethod
-    def backward(ctx, grad_output):
-        y_pred, y = ctx.saved_tensors
-        grad_input = 2 * (y_pred - y) / y_pred.shape[0]        
-        return grad_input, None
 
 class GraphRegressionModel(torch.nn.Module):
 
@@ -82,14 +29,17 @@ class GraphRegressionModel(torch.nn.Module):
         # GNN layers with ReLU, as before
         layers = []
         layers.append(layer_type(sz_in, sz_hid))
-        layers.append(nn.ReLU())
+        layers.append(nn.LeakyReLU())
 
         for _ in range(num_layers-2):
             layers.append(layer_type(sz_hid, sz_hid))
-            layers.append(nn.ReLU())
+            layers.append(nn.LeakyReLU())
             #layers.append(nn.Dropout(p=0.2))
         
         layers.append(layer_type(sz_hid, sz_hid)) # New!
+
+        layers.append(nn.Linear(sz_hid, sz_hid))
+        layers.append(nn.LeakyReLU())
         self.layers = nn.ModuleList(layers)
 
         # Final classificator
@@ -163,6 +113,8 @@ def train(model, train_loader, test_loader, num_epochs, lr):
             #print("next functions", outs.grad_fn.next_functions)
 
             loss = loss_fn(outs, data['y'].float()) # no train_mask!
+
+            #print(additive, outs, loss)
 
             # Propagate the loss backward
             loss.backward()

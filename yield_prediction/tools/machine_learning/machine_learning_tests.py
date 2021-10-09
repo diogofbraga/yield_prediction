@@ -247,7 +247,7 @@ class machine_learning():
             print()
         '''
 
-        model = GraphRegressionModel(torch_geometric.nn.GCNConv, num_layers) # gnn.LinearLayer torch_geometric.nn.GCNConv
+        model = GraphRegressionModel(torch_geometric.nn.GCNConv, num_layers)
         print("Id model:", id(model))
         print(model)
         loss, r2_train, r2_test, rmse_train, rmse_test = train(model, train_loader, test_loader, num_epochs=100, lr=learning_rate)
@@ -996,7 +996,7 @@ def out_of_sample(
             out_of_sample_test.preprocess_fingerprint_descriptors()
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
 
-        parameters_num_layers = [5, 6]
+        parameters_num_layers = [2, 3, 4, 5, 6]
         parameters_learning_rate = [0.01, 0.001]
         
         for num_layers in parameters_num_layers:
