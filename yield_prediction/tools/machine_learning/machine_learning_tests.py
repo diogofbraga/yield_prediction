@@ -30,6 +30,8 @@ import torch_geometric
 from torch_geometric.utils import from_networkx
 from torch_geometric.data import DataLoader
 import networkx as nx
+from openpyxl import load_workbook
+import xlsxwriter
 
 
 def save_fig_to_excel(excel_file, sheet_name, image_file, text=None):
@@ -996,6 +998,8 @@ def out_of_sample(
         parameters_learning_rate = [0.01, 0.001]
         parameters_graph_readout = ['sum', 'mean', 'max']
         parameters_molecules_combination = ['sum', 'product', 'mean']
+
+        headers = ['molecule', 'test', 'num_layers', 'learning_rate', 'graph_readout', 'molecules_combination', 'training_loss', 'r2_train', 'rmse_train', 'r2_test', 'rmse_test']
         
         for num_layers in parameters_num_layers:
             for learning_rate in parameters_learning_rate:
@@ -1003,17 +1007,47 @@ def out_of_sample(
                     for molecules_combination in parameters_molecules_combination:
                         loss, r2_train, rmse_train, r2_test, rmse_test = out_of_sample_test.process_gnn(num_layers, learning_rate, graph_readout, molecules_combination)
                         
-                        # Results to Excel
+                        # ----- Results to Excel ----- 
                         path = saveas[49:]
                         res = path.split("/")
-                        gnn_results.append({'molecule': res[0], 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'graph_readout': graph_readout, 'molecules_combination': molecules_combination, 'training_loss': loss, 'r2_train': r2_train, 'rmse_train': rmse_train, 'r2_test': r2_test, 'rmse_test': rmse_test})
-                        
-                        print('\nGNN Results:')
-                        print(gnn_results)
+                        path_file = 'results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1])
+                        result = iter([{'molecule': res[0], 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'graph_readout': graph_readout, 'molecules_combination': molecules_combination, 'training_loss': loss, 'r2_train': r2_train, 'rmse_train': rmse_train, 'r2_test': r2_test, 'rmse_test': rmse_test}])
 
-                        df = pd.DataFrame.from_dict(gnn_results)
-                        df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate', 'graph_readout', 'molecules_combination'], ascending=True)
-                        df.to_excel('results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1]), index=False)
+                        # create csv file if it does not exist
+                        if not os.path.isfile('test.csv'):
+                            with open('test.csv', 'w')as csv_file:
+                                csv_file.writelines(', '.join(headers))
+
+                        # create excel file if it does not exist
+                        if not os.path.isfile(path_file):
+                            book = xlsxwriter.Workbook(path_file)
+                            sheet = book.add_worksheet("Sheet1")
+                            for (idx, header) in enumerate(headers):
+                                sheet.write(0, idx, header)
+                            book.close()
+
+                        # open the files and start the loop
+                        with open('test.csv', 'a+') as csv_file:
+                            book = load_workbook(path_file)
+                            sheet = book.get_sheet_by_name('Sheet1')
+
+                            # loop through all dictionaries
+                            for d in result:
+                                values = [d[key] for key in headers]
+                                #csv_string = '\n'+', '.join(values)
+                                # write to csv file
+                                #csv_file.write(csv_string)
+                                # write to excel file
+                                sheet.append(values)
+                            book.save(filename=path_file)
+
+
+                        #print('\nGNN Results:')
+                        #print(gnn_results)
+
+                        #df = pd.DataFrame.from_dict(gnn_results)
+                        #df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate', 'graph_readout', 'molecules_combination'], ascending=True)
+                        #df.to_excel('results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1]), index=False)
 
         return 0
 
