@@ -138,13 +138,13 @@ def train(model, train_loader, test_loader, num_epochs, lr, mol_comb):
             best_running_loss = running_loss
             best_rmse_train = rmse_train
 
-        if r2_train < best_r2_train:
+        if r2_train > best_r2_train:
             best_r2_train = r2_train
 
         if rmse_test < best_rmse_test:
             best_rmse_test = rmse_test
         
-        if r2_test < best_r2_test:
+        if r2_test > best_r2_test:
             best_r2_test = r2_test
 
         print(f'[Epoch {epoch+1}/{num_epochs}] Loss: {running_loss/len(train_loader):.3f} | Train R-squared: {r2_train:.3f} | Train RMSE: {rmse_train:.3f} | Test R-squared: {r2_test:.3f} | Test RMSE: {rmse_test:.3f}') 
