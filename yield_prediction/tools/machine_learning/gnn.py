@@ -9,24 +9,11 @@ import numpy as np
 from sklearn.metrics import r2_score, mean_squared_error
 from torch.autograd import Function
 
-class LinearLayer(torch.nn.Module):
-    def __init__(self, sz_in, sz_out):
-        super().__init__()
-        self.W = nn.Parameter(torch.empty(size=(sz_in, sz_out)))
-        nn.init.xavier_uniform_(self.W.data)
-    
-    def forward(self, fts, adj):
-        # Simple linear layer application
-        new_fts = torch.mm(fts, self.W)
-        return new_fts
-
-
 class GraphRegressionModel(torch.nn.Module):
 
     def __init__(self, layer_type, num_layers=3, sz_in=9, sz_hid=256, sz_out=1):
         super().__init__()
 
-        # GNN layers with ReLU, as before
         layers = []
         layers.append(layer_type(sz_in, sz_hid))
         layers.append(nn.LeakyReLU())
@@ -36,19 +23,19 @@ class GraphRegressionModel(torch.nn.Module):
             layers.append(nn.LeakyReLU())
             #layers.append(nn.Dropout(p=0.2))
         
-        layers.append(layer_type(sz_hid, sz_hid)) # New!
+        layers.append(layer_type(sz_hid, sz_hid))
 
         layers.append(nn.Linear(sz_hid, sz_hid))
         layers.append(nn.LeakyReLU())
         self.layers = nn.ModuleList(layers)
 
         # Final classificator
-        self.f = nn.Linear(sz_hid, sz_out) # Maybe change this (?)
+        self.f = nn.Linear(sz_hid, sz_out)
     
     def forward(self, fts, adj, batch):
         # 1: obtain node latents
         for l in self.layers:
-            if isinstance(l, nn.ReLU) or isinstance(l, nn.Dropout):
+            if isinstance(l, nn.Linear) or isinstance(l, nn.LeakyReLU) or isinstance(l, nn.Dropout):
                 fts = l(fts)
             else:
                 fts = l(fts, adj)
