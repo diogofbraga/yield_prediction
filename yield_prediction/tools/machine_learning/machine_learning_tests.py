@@ -1034,6 +1034,7 @@ def out_of_sample(
                             # loop through all dictionaries
                             for d in result:
                                 values = [d[key] for key in headers]
+                                print(values)
                                 #csv_string = '\n'+', '.join(values)
                                 # write to csv file
                                 #csv_file.write(csv_string)
