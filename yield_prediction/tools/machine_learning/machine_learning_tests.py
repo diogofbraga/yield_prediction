@@ -959,8 +959,10 @@ def out_of_sample(
     
     """
 
-    gnn_results = []
-    
+    if 'additive/ranking_test1' in saveas:
+        print('nop')
+        return 0
+
     print('\n#### OUT-OF-SAMPLE TEST STARTED ####' + 
           '\nDescriptor Type: {}'.format(X_type) +
           '\nReaction Component: {}'.format(rxn_component) +
@@ -994,7 +996,7 @@ def out_of_sample(
             out_of_sample_test.preprocess_fingerprint_descriptors()
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
 
-        parameters_num_layers = [2, 3, 4, 5, 6]
+        parameters_num_layers = [2, 3, 4, 5]
         parameters_learning_rate = [0.01, 0.001]
         parameters_graph_readout = ['sum', 'mean', 'max']
         parameters_molecules_combination = ['sum', 'product', 'mean']
