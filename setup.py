@@ -23,7 +23,8 @@ setup(name='yield_prediction',
                         'scikit-learn==0.22.1',
                         'numpy==1.19.1',
                         'scipy==1.5.2',
-                        'pandas==1.1.1'
+                        'pandas==1.1.1',
+                        'xlsxwriter==3.0.1'
                         ],
       package_data={'yield_prediction': ['README.md']},
       packages=find_packages())
