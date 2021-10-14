@@ -959,7 +959,7 @@ def out_of_sample(
     
     """
 
-    if 'additive/ranking_test1' in saveas:
+    if 'additive' in saveas or 'aryl_halide/ranking_test1' in saveas:
         print('nop')
         return 0
 
