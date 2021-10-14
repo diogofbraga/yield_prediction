@@ -252,7 +252,7 @@ class machine_learning():
         model = GraphRegressionModel(torch_geometric.nn.GCNConv, num_layers, graph_readout)
         print("Id model:", id(model))
         print(model)
-        loss, r2_train, rmse_train, r2_test, rmse_test = train(model, train_loader, test_loader, num_epochs=100, lr=learning_rate, mol_comb=molecules_combination)
+        loss, r2_train, rmse_train, r2_test, rmse_test = train(model, train_loader, test_loader, num_epochs=200, lr=learning_rate, mol_comb=molecules_combination)
         return loss, r2_train, rmse_train, r2_test, rmse_test
         
         
@@ -959,7 +959,7 @@ def out_of_sample(
     
     """
 
-    if 'additive' in saveas or 'aryl_halide/ranking_test1' in saveas:
+    if 'additive' in saveas or 'aryl_halide' in saveas:
         print('nop')
         return 0
 
@@ -996,61 +996,117 @@ def out_of_sample(
             out_of_sample_test.preprocess_fingerprint_descriptors()
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
 
-        parameters_num_layers = [2, 3, 4, 5]
-        parameters_learning_rate = [0.01, 0.001]
-        parameters_graph_readout = ['sum', 'mean', 'max']
-        parameters_molecules_combination = ['sum', 'product', 'mean']
+        #parameters_num_layers = [2, 3, 4, 5]
+        #parameters_learning_rate = [0.01, 0.001]
+        #parameters_graph_readout = ['sum', 'mean', 'max']
+        #parameters_molecules_combination = ['sum', 'product', 'mean']
 
         headers = ['molecule', 'test', 'num_layers', 'learning_rate', 'graph_readout', 'molecules_combination', 'training_loss', 'r2_train', 'rmse_train', 'r2_test', 'rmse_test']
         
-        for num_layers in parameters_num_layers:
-            for learning_rate in parameters_learning_rate:
-                for graph_readout in parameters_graph_readout:
-                    for molecules_combination in parameters_molecules_combination:
-                        loss, r2_train, rmse_train, r2_test, rmse_test = out_of_sample_test.process_gnn(num_layers, learning_rate, graph_readout, molecules_combination)
-                        
-                        # ----- Results to Excel ----- 
-                        path = saveas[49:]
-                        res = path.split("/")
-                        path_file = 'results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1])
-                        result = iter([{'molecule': res[0], 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'graph_readout': graph_readout, 'molecules_combination': molecules_combination, 'training_loss': loss, 'r2_train': r2_train, 'rmse_train': rmse_train, 'r2_test': r2_test, 'rmse_test': rmse_test}])
+        if 'additive' in saveas:
+            params = [{'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'product'},
+                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'product'},
+                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
+                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
+                    {'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
+                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'product'},
+                    {'num_layers': 3, 'learning_rate': 0.01, 'graph_readout': 'mean', 'molecules_combination': 'product'},
+                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
+                    {'num_layers': 2, 'learning_rate': 0.001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
+                    {'num_layers': 3, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'mean'},
+                    {'num_layers': 3, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'product'},
+                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'product'},
+                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
+                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
+                    {'num_layers': 3, 'learning_rate': 0.0001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
+                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'product'},
+                    {'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
+                    {'num_layers': 3, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
+                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
+                    {'num_layers': 2, 'learning_rate': 0.0001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
+                    {'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'mean'},
+                    {'num_layers': 3, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'mean'}]
 
-                        # create csv file if it does not exist
-                        if not os.path.isfile('test.csv'):
-                            with open('test.csv', 'w')as csv_file:
-                                csv_file.writelines(', '.join(headers))
+        if 'aryl_halide' in saveas:
+            params = [{'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'sum'},
+                    {'num_layers': 4, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'sum'},
+                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
+                    {'num_layers': 5, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'sum'},
+                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
+                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'sum'},
+                    {'num_layers': 3, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'sum'},
+                    {'num_layers': 5, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'mean'},
+                    {'num_layers': 4, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'product'},
+                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
+                    {'num_layers': 4, 'learning_rate': 0.01, 'graph_readout': 'mean', 'molecules_combination': 'mean'},
+                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'sum'},
+                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
+                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
+                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'sum'},
+                    {'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
+                    {'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
+                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'mean'},
+                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'mean'},
+                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'product'},
+                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'product'},
+                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
+                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'mean'},
+                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'mean'}]
 
-                        # create excel file if it does not exist
-                        if not os.path.isfile(path_file):
-                            book = xlsxwriter.Workbook(path_file)
-                            sheet = book.add_worksheet("Sheet1")
-                            for (idx, header) in enumerate(headers):
-                                sheet.write(0, idx, header)
-                            book.close()
+        #for num_layers in parameters_num_layers:
+        #    for learning_rate in parameters_learning_rate:
+        #        for graph_readout in parameters_graph_readout:
+        #            for molecules_combination in parameters_molecules_combination:
+        for param in params:
+            num_layers = param['num_layers']
+            learning_rate = param['learning_rate']
+            graph_readout = param['graph_readout']
+            molecules_combination = param['molecules_combination']
 
-                        # open the files and start the loop
-                        with open('test.csv', 'a+') as csv_file:
-                            book = load_workbook(path_file)
-                            sheet = book.get_sheet_by_name('Sheet1')
+            loss, r2_train, rmse_train, r2_test, rmse_test = out_of_sample_test.process_gnn(num_layers, learning_rate, graph_readout, molecules_combination)
+            
+            # ----- Results to Excel ----- 
+            path = saveas[49:]
+            res = path.split("/")
+            path_file = 'results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1])
+            result = iter([{'molecule': res[0]+'_200epochs', 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'graph_readout': graph_readout, 'molecules_combination': molecules_combination, 'training_loss': loss, 'r2_train': r2_train, 'rmse_train': rmse_train, 'r2_test': r2_test, 'rmse_test': rmse_test}])
 
-                            # loop through all dictionaries
-                            for d in result:
-                                values = [d[key] for key in headers]
-                                print(values)
-                                #csv_string = '\n'+', '.join(values)
-                                # write to csv file
-                                #csv_file.write(csv_string)
-                                # write to excel file
-                                sheet.append(values)
-                            book.save(filename=path_file)
+            # create csv file if it does not exist
+            if not os.path.isfile('test.csv'):
+                with open('test.csv', 'w')as csv_file:
+                    csv_file.writelines(', '.join(headers))
+
+            # create excel file if it does not exist
+            if not os.path.isfile(path_file):
+                book = xlsxwriter.Workbook(path_file)
+                sheet = book.add_worksheet("Sheet1")
+                for (idx, header) in enumerate(headers):
+                    sheet.write(0, idx, header)
+                book.close()
+
+            # open the files and start the loop
+            with open('test.csv', 'a+') as csv_file:
+                book = load_workbook(path_file)
+                sheet = book.get_sheet_by_name('Sheet1')
+
+                # loop through all dictionaries
+                for d in result:
+                    values = [d[key] for key in headers]
+                    print(values)
+                    #csv_string = '\n'+', '.join(values)
+                    # write to csv file
+                    #csv_file.write(csv_string)
+                    # write to excel file
+                    sheet.append(values)
+                book.save(filename=path_file)
 
 
-                        #print('\nGNN Results:')
-                        #print(gnn_results)
+            #print('\nGNN Results:')
+            #print(gnn_results)
 
-                        #df = pd.DataFrame.from_dict(gnn_results)
-                        #df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate', 'graph_readout', 'molecules_combination'], ascending=True)
-                        #df.to_excel('results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1]), index=False)
+            #df = pd.DataFrame.from_dict(gnn_results)
+            #df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate', 'graph_readout', 'molecules_combination'], ascending=True)
+            #df.to_excel('results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1]), index=False)
 
         return 0
 
