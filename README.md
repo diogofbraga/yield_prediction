@@ -35,8 +35,6 @@ The data and quantum chemical descriptors in `yield_prediction/data/original` ar
 
 The Doyle et al.<sup>2</sup> dataset is preprocessed using `yield_prediction/assemble_rxns.py`. The molecules in each reaction and corresponding yield data can be found in `yield_prediction/original/reactions`.
 
-The SVR preprocessing is from Haywood et al.<sup>1</sup>. Some changes were included for the GNN preprocessing due to its different algorithmic nature.
-
 ### Model Development
 Models are trained and tested using `run_ml_out-of-sample.py`.
 
