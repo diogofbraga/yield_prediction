@@ -136,10 +136,8 @@ def get_smiles_data(rxn_components, reactions, hand_coded_smi, saveas=None):
     
     smiles = defaultdict(list)
     for rxn_component in rxn_components:
-        print(rxn_component)
         
         for mol in reactions[rxn_component].drop_duplicates():
-            print(mol)
 
             if pd.isnull(mol):
                 smiles[rxn_component].append(

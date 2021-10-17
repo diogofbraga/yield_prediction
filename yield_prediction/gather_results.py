@@ -193,7 +193,7 @@ def get_fp_bit_length_results(scores_mean, metric):
     
     return fps_bit_length
 
-'''                    
+              
 fps =  [
         'Morgan1_32', 'Morgan1_64', 'Morgan1_128', 'Morgan1_256', 
             'Morgan1_512', 'Morgan1_1024', 'Morgan1_2048',
@@ -211,7 +211,7 @@ fps =  [
             'RDK_512', 'RDK_1024', 'RDK_2048',
         'MACCS', 
         ]
-'''  
+
 
 graphs_folders = []
 wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'rbf', 'inversemultiquadratic']
@@ -269,14 +269,14 @@ for i in wl_kernel_functions:
                             graphs_folders.append('WL{}_iterations_{}'.format(i, n)+hyperp_path)
 
 dirs = defaultdict()
-#dirs['quantum'] = 'quantum_descriptors'
-#dirs['quantum_noI'] = 'quantum_descriptors_noI'
-#dirs['one-hot'] = 'one_hot_encodings'
+dirs['quantum'] = 'quantum_descriptors'
+dirs['quantum_noI'] = 'quantum_descriptors_noI'
+dirs['one-hot'] = 'one_hot_encodings'
 for graph in graphs_folders:
     dirs['{}'.format(graph)] = 'graph_descriptors/{}'.format(graph)
-#for fp in fps:
-#    dirs['{}_raw'.format(fp)] = 'fp_descriptors/{}/raw'.format(fp)
-#    dirs['{}_concat'.format(fp)] = 'fp_descriptors/{}/concat'.format(fp)
+for fp in fps:
+    dirs['{}_raw'.format(fp)] = 'fp_descriptors/{}/raw'.format(fp)
+    dirs['{}_concat'.format(fp)] = 'fp_descriptors/{}/concat'.format(fp)
 
 descriptor_names=[dirs[k] for k in dirs.keys()]
 test_types=['out_of_sample']
@@ -284,7 +284,6 @@ test_names={
     'out_of_sample': ['additive', 'aryl_halide', 'base', 'ligand'],
     }
 
-print(dirs)
 
 
 scores = get_results(
@@ -294,7 +293,6 @@ scores = get_results(
         'out_of_sample': ['additive', 'aryl_halide', 'base', 'ligand'],
         }
     )
-print("Scores Done")
 
 
 training_scores = get_results(
@@ -305,7 +303,6 @@ training_scores = get_results(
         },
     sheet_name='training_scores'
     )
-print("Training Scores Done")
 
 
 
@@ -313,7 +310,6 @@ for test_type in scores.keys():
     if test_type == 'out_of_sample':
         scores_mean = defaultdict()
         for test_name in scores[test_type].keys():
-            print("Test1")
             if isinstance(scores[test_type][test_name], pd.DataFrame):
                 scores_mean[test_name] = pd.DataFrame()
                 
@@ -353,7 +349,6 @@ for test_type in training_scores.keys():
     if test_type == 'out_of_sample':
         training_scores_mean = defaultdict()
         for test_name in training_scores[test_type].keys():
-            print("Training1")
             if isinstance(training_scores[test_type][test_name], pd.DataFrame):
                 training_scores_mean[test_name] = pd.DataFrame()
                 
@@ -388,7 +383,7 @@ for test_type in training_scores.keys():
         writer.save()
 
 
-'''
+
 fps_bit_length_results = defaultdict()
 fps_bit_length_results['Additive Mean R2'] = get_fp_bit_length_results(
     scores_mean['additive'], 
@@ -411,7 +406,7 @@ writer = pd.ExcelWriter('results/fp_bit_length_results.xlsx', engine='xlsxwriter
 for name, results in fps_bit_length_results.items():
     results.to_excel(writer, sheet_name=name)
 writer.save()
-'''
+
  
 
 '''
@@ -434,7 +429,7 @@ test_names={
         'out_of_sample': ['additive', 'aryl_halide'],
         }
 
-'''
+
 y_pred = get_results(
         descriptor_names=descriptor_names,
         test_types=['out_of_sample'],
@@ -482,7 +477,7 @@ for name, fps in y_pred_to_save.items():
     for k, df in fps.items():
         df.to_excel(writer, sheet_name='{}'.format(k))
     writer.save()
-'''
+
 
 for test_type in scores.keys():
     if test_type == 'out_of_sample':
@@ -495,7 +490,6 @@ for test_type in scores.keys():
         
         scores_subset = defaultdict()
         for test_name in test_names[test_type]:
-            print("Test1", test_name)    
             scores_subset[test_name] = pd.concat([
                  scores[test_type][test_name][
                     (scores[test_type][test_name].index.isin(
@@ -534,8 +528,7 @@ for test_type in training_scores.keys():
                 descriptors.append(descriptor)
         
         training_scores_subset = defaultdict()
-        for test_name in test_names[test_type]:
-            print("Training2", test_name)   
+        for test_name in test_names[test_type]: 
             training_scores_subset[test_name] = pd.concat([
                  training_scores[test_type][test_name][
                     (training_scores[test_type][test_name].index.isin(

@@ -158,7 +158,6 @@ def main():
 
         if len(hyperp_keys) == 0:
             for n in np.arange(2, max_iterations):
-                #print("wl_kernel_functions", i, n)
                 info['graphs_WL{}_iterations_{}'.format(i, n)] = defaultdict()
                 info['graphs_WL{}_iterations_{}'.format(i, n)]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)
                 info['graphs_WL{}_iterations_{}'.format(i, n)]['X_type'] = 'graphs'
@@ -173,7 +172,6 @@ def main():
                 hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0)
                 print(hyperp_path)
                 for n in np.arange(2, max_iterations):
-                    #print("wl_kernel_functions", i, n)
                     info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path] = defaultdict()
                     info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)+hyperp_path
                     info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
@@ -189,7 +187,6 @@ def main():
                     hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0) + '_' + str(hyperp_keys[1]) + '_' + str(h1)
                     print(hyperp_path)
                     for n in np.arange(2, max_iterations):
-                        #print("wl_kernel_functions", i, n)
                         info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path] = defaultdict()
                         info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)+hyperp_path
                         info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'
@@ -206,7 +203,6 @@ def main():
                         hyperp_path = '_' + str(hyperp_keys[0]) + '_' + str(h0) + '_' + str(hyperp_keys[1]) + '_' + str(h1) + '_' + str(hyperp_keys[2]) + '_' + str(h2)
                         print(hyperp_path)
                         for n in np.arange(2, max_iterations):
-                            #print("wl_kernel_functions", i, n)
                             info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path] = defaultdict()
                             info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['dir'] = 'graph_descriptors/WL{}_iterations_{}'.format(i, n)+hyperp_path
                             info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X_type'] = 'graphs'

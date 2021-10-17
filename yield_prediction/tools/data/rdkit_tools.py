@@ -68,13 +68,8 @@ def molg_from_smi(smiles):
     bond_with_idx = {i:bond.GetBondTypeAsDouble() for i,bond in enumerate(mol.GetBonds())}
     adj_m = Chem.GetAdjacencyMatrix(mol, useBO=True).tolist()
 
-    #print("atom_with_idx", atom_with_idx)
-    #print("bond_with_idx", bond_with_idx)
-    #print("adj_m", adj_m)
-
     return Graph(adj_m, atom_with_idx, bond_with_idx)
 
-#symbols = []
 def molnx_from_smi(smiles):
     G = nx.Graph()
 
@@ -84,29 +79,13 @@ def molnx_from_smi(smiles):
         G.add_node(atom.GetIdx(),
                    symbol=atom.GetSymbol())
 
-        #if atom.GetSymbol() not in symbols:
-            #symbols.append(atom.GetSymbol())
-
     for bond in mol.GetBonds():
         G.add_edge(bond.GetBeginAtomIdx(),
                    bond.GetEndAtomIdx(),
                    #idx=bond.GetIdx(),
                    bond_type=bond.GetBondTypeAsDouble())
 
-    #print("nodes", G.nodes(data=True))
-    #print("edges", G.edges(data=True))
-
-    A = nx.adjacency_matrix(G) # Returns a sparse matrix
-    #print(A.todense())
-
-    #print(symbols)
     return G
-
-# def fps_from_smi(smiles):
-#     mol = Chem.MolFromSmiles(smiles)
-#     fps = AllChem.GetMorganFingerprintAsBitVect(mol, radius=2, nBits=1024)#.ToBitString()
-    
-#     return fps
 
 def fps_from_smi(smiles, fps_type=RDKFingerprint, fps_kw={}):
     mol = Chem.MolFromSmiles(smiles)
