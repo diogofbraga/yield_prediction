@@ -9,11 +9,6 @@ import numpy as np
 import grakel.kernels as kernels
 import sklearn.metrics.pairwise as sklearn_kernels
 
-#from tools.machine_learning.grakel_nonlinear.vertex_histogram import VertexHistogram
-#from tools.machine_learning.grakel_nonlinear.weisfeiler_lehman import WeisfeilerLehman
-from grakel.kernels.weisfeiler_lehman import WeisfeilerLehman
-from grakel.kernels.vertex_histogram import VertexHistogram
-
 distance_based_functions = ['gaussian', 'exponential', 'rbf', 'laplacian', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy']
 
 class kernel():
@@ -315,15 +310,12 @@ class kernel():
                 for column in range(len(test[row])): # columns compared with rows
                     D[row][column] = dkf_test[row][row] + train[column][column] - (2 * test[row][column])
 
-        #print("Distance kernel matrix before non-linearity: \n", abs(D))
         return abs(D)
     
         
     def non_linearity(self, K, kernel_function, h0=None, h1=None , h2=None):
         
         print("Kernel function:", kernel_function)
-        #print("Kernel matrix before non-linearity: \n", K)
-
         print("h0:", h0, "h1:", h1, "h2:", h2)
 
         if kernel_function is 'linear':
@@ -348,44 +340,14 @@ class kernel():
             scale = h0
             bias = h1
             K = np.arctan(scale * K + bias)
-
-        elif kernel_function is 'gaussian': # Not working
-            sigma = 1/K.shape[1]
-            variance = np.power(sigma,2)
-            K = np.exp(np.float128(-((np.abs(K)) ** 2)/(2*variance)))
-
-        elif kernel_function is 'exponential': # Not working
-            sigma = 1/K.shape[1]
-            variance = np.power(sigma,2)
-            K = np.exp(np.float128(-(np.abs(K))/(2*variance)))
         
         elif kernel_function is 'rbf':
             gamma = h0/K.shape[1]
             K = np.exp(np.float128(-gamma * (np.abs(K)) ** 2))
-        
-        elif kernel_function is 'laplacian': # Not working
-            standard_deviation = 1/K.shape[1]
-            K = np.exp(np.float128(-(np.abs(K))/standard_deviation))
-        
-        elif kernel_function is 'rationalquadratic': # Not working
-            standard_deviation = 1/K.shape[1]
-            bias = 1
-            K = 1 - (((np.abs(K)) ** 2)/((np.abs(K)) ** 2 + bias))
-
-        elif kernel_function is 'multiquadratic': # Not beneficial
-            bias = 1
-            K = np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
 
         elif kernel_function is 'inversemultiquadratic':
             bias = h0
             K = 1 / np.sqrt(((np.abs(K)) ** 2) + np.power(bias,2))
-
-        elif kernel_function is 'cauchy': # Not working
-            sigma = 1/K.shape[1]
-            variance = np.power(sigma,2)
-            K = 1 / (1 + ((np.abs(K)) ** 2)/variance)
-
-        #print("Kernel matrix after non-linearity: \n", K)
 
         return K
 

@@ -1,13 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 import torch_geometric
-from torch_geometric.utils import to_dense_adj, to_networkx
-from torch_geometric.data import DataLoader
-import numpy as np
 from sklearn.metrics import r2_score, mean_squared_error
-from torch.autograd import Function
 
 class GraphRegressionModel(torch.nn.Module):
 
@@ -56,7 +51,7 @@ class GraphRegressionModel(torch.nn.Module):
 # Train the given model on the given dataset for num_epochs
 def train(model, train_loader, test_loader, num_epochs, lr, mol_comb):
     # Set up the loss and the optimizer
-    loss_fn = nn.MSELoss() #ReactionMSEloss.apply #BCEWithLogitsLoss()
+    loss_fn = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
     best_rmse_test = float("inf")
     best_rmse_train = float("inf")
@@ -103,8 +98,6 @@ def train(model, train_loader, test_loader, num_epochs, lr, mol_comb):
             # Set the parameter gradients to zero
             optimizer.zero_grad()
 
-            #additivex = data['additive_molg'].x
-
             additive = model(data['additive_molg'].x, data['additive_molg'].edge_index, data['additive_molg'].batch).squeeze()
             aryl_halide = model(data['aryl_halide_molg'].x, data['aryl_halide_molg'].edge_index, data['aryl_halide_molg'].batch).squeeze()
             base = model(data['base_molg'].x, data['base_molg'].edge_index, data['base_molg'].batch).squeeze()
@@ -117,10 +110,8 @@ def train(model, train_loader, test_loader, num_epochs, lr, mol_comb):
             elif mol_comb == 'mean':
                 sum = additive + aryl_halide + base + ligand
                 outs = sum/4
-            #print(f"outs -> data: {outs.data}\nrequires_grad: {outs.requires_grad}\n grad: {outs.grad}\ngrad_fn: {outs.grad_fn}\nis_leaf: {outs.is_leaf}\n")
-            #print("next functions", outs.grad_fn.next_functions)
 
-            loss = loss_fn(outs, data['y'].float()) # no train_mask!
+            loss = loss_fn(outs, data['y'].float())
 
             # Propagate the loss backward
             loss.backward()

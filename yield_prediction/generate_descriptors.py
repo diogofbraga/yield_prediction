@@ -207,11 +207,6 @@ def assemble_graph_descriptors(rxn_components, reactions, rxn_smiles, mode):
             
         graphs_data[rxn_component] = pd.DataFrame.from_records(
             graphs_data[rxn_component])
-
-        #print("graphs_data", graphs_data['additive']['additive_molg'][0].get_adjacency_matrix())
-        #print("graphs_data", graphs_data['additive']['additive_molg'][0].nodes(data=True))
-        #print(nx.adjacency_matrix(graphs_data['additive']['additive_molg'][0]).todense())
-        #print("reactions", reactions)
             
     graph_descriptors = combine_descriptors_to_reactions(graphs_data, reactions)
     

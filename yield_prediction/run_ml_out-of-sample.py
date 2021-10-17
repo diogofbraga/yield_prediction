@@ -11,7 +11,6 @@ import numpy as np
 from generate_descriptors import assemble_graph_descriptors, assemble_fingerprint_descriptors, assemble_one_hot_encondings
 import tools.data.rdkit_tools as rd
 import tools.machine_learning.machine_learning_tests as ml_tests
-import networkx as nx
 
 
 class ranking():
@@ -81,7 +80,7 @@ def main():
         )
     
     info = defaultdict()
-    '''
+
     info['quantum'] = defaultdict()
     info['quantum']['dir'] = 'quantum_descriptors'
     info['quantum']['X_type'] = 'quantum'
@@ -112,16 +111,9 @@ def main():
         rxn_components, reactions
         )
     info['one-hot']['kwargs'] = None
-    '''
-    mode = 'gnn' # 'gnn'/'grakel'
+
+    mode = 'gnn'
     graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles, mode)
-    #print(graphs.iloc[0]['additive_molg'].get_adjacency_matrix())
-    #print(graphs.iloc[0]['additive_molg'].get_edge_dictionary())
-    #print(graphs.iloc[0]['additive_molg'].get_vertices())
-    #print(graphs.iloc[0]['additive_molg'].get_edges())
-    #print(graphs.iloc[0]['additive_molg'].get_labels())
-    #print(graphs.iloc[0]['additive_molg'].nodes(data=True))
-    #print(graphs.iloc[0]['additive_molg'].edges(data=True))
 
     info['graphs_gnn'] = defaultdict()
     info['graphs_gnn']['dir'] = 'graph_descriptors/WL_gnn'
@@ -132,9 +124,11 @@ def main():
     info['graphs_gnn']['X'] = graphs
     info['graphs_gnn']['kwargs'] = {}
 
-    '''
+    mode = 'grakel'
+    graphs = assemble_graph_descriptors(rxn_components, reactions, rxn_smiles, mode)
+
     wl_kernel_functions = ['linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'rbf', 'inversemultiquadratic'] # 'linear', 'polynomial', 'sigmoidlogistic', 'sigmoidhyperbolictangent', 'sigmoidarctangent', 'gaussian', 'exponential', 'rbf', 'laplacian', 'rationalquadratic', 'multiquadratic', 'inversemultiquadratic', 'power', 'log', 'cauchy'
-    max_iterations = 7 # 11
+    max_iterations = 7
     for i in wl_kernel_functions:
         hyperparameters = {}
         if i is 'polynomial':
@@ -222,7 +216,7 @@ def main():
                             info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['X'] = graphs
                             info['graphs_WL{}_iterations_{}'.format(i, n)+hyperp_path]['kwargs'] = {'kernel_name':'WeisfeilerLehman', 'n_iter': int(n), 'kernel_function': i, 'h0': h0, 'h1': h1, 'h2': h2}
                 
-    '''
+    
 
     '''
     info['graphs_WL_randomwalk'] = defaultdict()
@@ -235,7 +229,6 @@ def main():
     info['graphs_WL_randomwalk']['kwargs'] = {'kernel_name':'RandomWalkLabeled', 'verbose': True, 'kernel_function': None}
     '''
 
-    '''
     for fp, fp_type, fps_kw in zip(
             [
                 'FMorgan1_32', 'FMorgan1_64', 
@@ -336,7 +329,7 @@ def main():
                         rxn_components, reactions, rxn_smiles, fp_type, fps_kw,
                         return_raw=True,  return_concat=True, return_sum=False
                         )
-    '''
+
     dir_setup(
         descriptor_names=[info[k]['dir'] for k in info.keys()],
         test_types=['out_of_sample'],
@@ -380,10 +373,10 @@ def main():
             ranked_mols=ranked_mols[rxn_component]
             )
         
-        mol_sets = [] #[mols_plate1, mols_plate2, mols_plate3]
+        mol_sets = [mols_plate1, mols_plate2, mols_plate3]
         mol_sets.extend(additive_ranking.values())
         
-        names = [] #['plate_1', 'plate_2', 'plate_3']
+        names = ['plate_1', 'plate_2', 'plate_3']
         names.extend(
             ['ranking_test{}'.format(i) for i in additive_ranking.keys()]
             )
@@ -427,11 +420,11 @@ def main():
             n_sets=3
             )
         
-        mol_sets = [] #[mols_Cl, mols_Br, mols_I, mols_phenyl, mols_pyridyl]
+        mol_sets = [mols_Cl, mols_Br, mols_I, mols_phenyl, mols_pyridyl]
         mol_sets.extend(aryl_halide_ranking.values())
         
-        names = [] #['halide_test_Cl', 'halide_test_Br', 'halide_test_I', 
-                 #'aryl_test_phenyl', 'aryl_test_pyridyl']
+        names = ['halide_test_Cl', 'halide_test_Br', 'halide_test_I', 
+                 'aryl_test_phenyl', 'aryl_test_pyridyl']
         names.extend(
             ['ranking_test{}'.format(i) for i in aryl_halide_ranking.keys()]
             )
@@ -459,7 +452,6 @@ def main():
                 kwargs=info_d['kwargs']
                 )
         
-        '''
         # Leave-one-out Tests.
         test_name = 'out_of_sample'
         
@@ -485,7 +477,6 @@ def main():
                     save_model=False,
                     kwargs=info_d['kwargs']
                     )
-        '''
             
 if __name__ == '__main__':
     main()

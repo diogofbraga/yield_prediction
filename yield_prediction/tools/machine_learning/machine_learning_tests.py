@@ -11,7 +11,7 @@ import os
 import numpy as np
 from collections import defaultdict
 import openpyxl
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.model_selection import KFold
 import pickle
@@ -127,18 +127,12 @@ class machine_learning():
         
     def ohe(self, value):
         reference = ['O', 'N', 'C', 'F', 'S', 'Cl', 'Br', 'I', 'P']
-        #idx = value.__getitem__('idx').numpy()
+
         symbols = value.__getitem__('symbol')
-        #result = []
-        #print("idx", idx)
-        #print("symbols", symbols)
-        #for i in np.nditer(idx):
-        #    result.append(symbols[i])
 
         result = pd.Categorical(symbols, categories=reference)
         result = pd.get_dummies(result).to_numpy()
 
-        #print(result)
         return result
         
     def process_gnn(self, num_layers=3, learning_rate=0.1, graph_readout='mean', molecules_combination='product', X_train=None, X_test=None, y_train=None, y_test=None):
@@ -151,37 +145,19 @@ class machine_learning():
         if y_test is None:
             y_test = self.y_test
 
-        #print(X_train.iloc[0]['additive_molg'].nodes(data=True))
-        #print(X_train.iloc[0]['additive_molg'].edges(data=True))
-
-        #for index, value in y_train.items():
-        #    print(f"Index : {index}, Value : {value}")
-        #    print(y_train[index])
-
         train_dataset = []
         for molg_type in X_train:
             i = 0
             for index, value in X_train[molg_type].items():
-                #print("Value", value)
-                #print("nodes", value.nodes(data=True))
-                #print("edges", value.edges(data=True))
-                #print(value)
                 g = from_networkx(value)
-                #print(g)
-                #print("g", g.to_dict())
                 x = self.ohe(g)
                 g.__setitem__('x', torch.tensor(x, dtype=torch.float32, requires_grad=True))
-                #y = [y_train[index].astype(np.float32)] # not correct because y is the combination of the 4 molecules
-                #g.__setitem__('y', torch.tensor(y))
-                #print("g", g)
-                #print("g", g.to_dict())
-                delattr(g, 'symbol') # try without this
-                delattr(g, 'bond_type') # try without this
+                delattr(g, 'symbol')
+                delattr(g, 'bond_type')
                 if molg_type == 'additive_molg':
                     train_dataset.append({'y': torch.tensor(y_train[index], dtype=torch.float32)})
                 train_dataset[i].update({molg_type: g})
                 i = i+1
-                #print(f"Index : {index}, Value : {type(value)}")
 
         test_dataset = []
         for molg_type in X_test:
@@ -190,67 +166,18 @@ class machine_learning():
                 g = from_networkx(value)
                 x = self.ohe(g)
                 g.__setitem__('x', torch.tensor(x, dtype=torch.float32, requires_grad=True))
-                delattr(g, 'symbol') # try without this
-                delattr(g, 'bond_type') # try without this
+                delattr(g, 'symbol')
+                delattr(g, 'bond_type')
                 if molg_type == 'additive_molg':
                     test_dataset.append({'y': torch.tensor(y_test[index], dtype=torch.float32)})
                 test_dataset[i].update({molg_type: g})
                 i = i+1
 
-
-        '''
-            for index, value in X_train[molg_type].items():
-                #print("Value", value)
-                #print("nodes", value.nodes(data=True))
-                #print("edges", value.edges(data=True))
-                #print(value)
-                g = from_networkx(value)
-                #print(g)
-                #print("g", g.to_dict())
-                x = self.ohe(g)
-                g.__setitem__('x', torch.tensor(x, dtype=torch.float32, requires_grad=True))
-                edge_index = g.__getitem__('edge_index')
-                delattr(g, 'edge_index')
-                sub = edge_index.detach().numpy()
-                g.__setitem__('edge_index', torch.tensor(sub, dtype=torch.float32, requires_grad=True))
-                #y = [y_train[index].astype(np.float32)] # not correct because y is the combination of the 4 molecules
-                #g.__setitem__('y', torch.tensor(y))
-                delattr(g, 'symbol') # try without this
-                delattr(g, 'bond_type') # try without this
-                #print("g", g)
-                #print("g", g.to_dict())
-                if molg_type == 'additive_molg':
-                    train_dataset.append({'y': torch.tensor(y_train[index], dtype=torch.float32)})
-                train_dataset[i].update({molg_type: g})
-                i = i+1
-                #print(f"Index : {index}, Value : {type(value)}")
-        '''
-        
-        #print(train_dataset[0])
-        #print(train_dataset[0]['additive_molg'].__getitem__('x'))
-
     
         train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
         test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
-        '''
-        for idx, data in enumerate(train_loader):
-            # data is of type 'Batch'
-            print(type(data))
-            #print(f'Batch {idx} size: {data.num_graphs}')
-
-            # apart from edge_index, x, and y, that we would expect
-            # a Batch object has a 'batch' property, mapping each node to its component (the original graph)
-            # and a 'ptr' property, marking the boundaries between components
-            print(data)
-            if idx == 2:
-                print(data.batch)
-                print(data.ptr)
-            print()
-        '''
-
         model = GraphRegressionModel(torch_geometric.nn.GCNConv, num_layers, graph_readout)
-        print("Id model:", id(model))
         print(model)
         loss, r2_train, rmse_train, r2_test, rmse_test = train(model, train_loader, test_loader, num_epochs=200, lr=learning_rate, mol_comb=molecules_combination)
         return loss, r2_train, rmse_train, r2_test, rmse_test
@@ -959,10 +886,6 @@ def out_of_sample(
     
     """
 
-    if 'aryl_halide' in saveas or 'ranking_test1' in saveas or 'ranking_test2' in saveas:
-        print('nop')
-        return 0
-
     print('\n#### OUT-OF-SAMPLE TEST STARTED ####' + 
           '\nDescriptor Type: {}'.format(X_type) +
           '\nReaction Component: {}'.format(rxn_component) +
@@ -996,117 +919,45 @@ def out_of_sample(
             out_of_sample_test.preprocess_fingerprint_descriptors()
     elif X_type == 'gnn': # X_type is graphs, but the preprocessing is different
 
-        #parameters_num_layers = [2, 3, 4, 5]
-        #parameters_learning_rate = [0.01, 0.001]
-        #parameters_graph_readout = ['sum', 'mean', 'max']
-        #parameters_molecules_combination = ['sum', 'product', 'mean']
+        parameters_num_layers = [2, 3, 4, 5]
+        parameters_learning_rate = [0.01, 0.001]
+        parameters_graph_readout = ['sum', 'mean', 'max']
+        parameters_molecules_combination = ['sum', 'product', 'mean']
 
         headers = ['molecule', 'test', 'num_layers', 'learning_rate', 'graph_readout', 'molecules_combination', 'training_loss', 'r2_train', 'rmse_train', 'r2_test', 'rmse_test']
-        
-        if 'additive' in saveas:
-            params = [{'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'product'},
-                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'product'},
-                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
-                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
-                    {'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
-                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'product'},
-                    {'num_layers': 3, 'learning_rate': 0.01, 'graph_readout': 'mean', 'molecules_combination': 'product'},
-                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
-                    {'num_layers': 2, 'learning_rate': 0.001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
-                    {'num_layers': 3, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'mean'},
-                    {'num_layers': 3, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'product'},
-                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'product'},
-                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
-                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
-                    {'num_layers': 3, 'learning_rate': 0.0001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
-                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'product'},
-                    {'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
-                    {'num_layers': 3, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
-                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
-                    {'num_layers': 2, 'learning_rate': 0.0001, 'graph_readout': 'sum', 'molecules_combination': 'product'},
-                    {'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'mean'},
-                    {'num_layers': 3, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'mean'}]
 
-        if 'aryl_halide' in saveas:
-            params = [{'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'sum'},
-                    {'num_layers': 4, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'sum'},
-                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
-                    {'num_layers': 5, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'sum'},
-                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
-                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'sum'},
-                    {'num_layers': 3, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'sum'},
-                    {'num_layers': 5, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'mean'},
-                    {'num_layers': 4, 'learning_rate': 0.01, 'graph_readout': 'max', 'molecules_combination': 'product'},
-                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
-                    {'num_layers': 4, 'learning_rate': 0.01, 'graph_readout': 'mean', 'molecules_combination': 'mean'},
-                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'sum'},
-                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
-                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
-                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'sum'},
-                    {'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
-                    {'num_layers': 3, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'sum'},
-                    {'num_layers': 5, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'mean'},
-                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'mean'},
-                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'max', 'molecules_combination': 'product'},
-                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'max', 'molecules_combination': 'product'},
-                    {'num_layers': 5, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'product'},
-                    {'num_layers': 4, 'learning_rate': 0.001, 'graph_readout': 'mean', 'molecules_combination': 'mean'},
-                    {'num_layers': 4, 'learning_rate': 0.0001, 'graph_readout': 'mean', 'molecules_combination': 'mean'}]
+        for num_layers in parameters_num_layers:
+            for learning_rate in parameters_learning_rate:
+                for graph_readout in parameters_graph_readout:
+                    for molecules_combination in parameters_molecules_combination:
+                        loss, r2_train, rmse_train, r2_test, rmse_test = out_of_sample_test.process_gnn(num_layers, learning_rate, graph_readout, molecules_combination)
+                        
+                        # ----- Results to Excel ----- 
+                        path = saveas[49:]
+                        res = path.split("/")
+                        path_file = 'results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1])
+                        result = iter([{'molecule': res[0]+'_200epochs', 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'graph_readout': graph_readout, 'molecules_combination': molecules_combination, 'training_loss': loss, 'r2_train': r2_train, 'rmse_train': rmse_train, 'r2_test': r2_test, 'rmse_test': rmse_test}])
 
-        #for num_layers in parameters_num_layers:
-        #    for learning_rate in parameters_learning_rate:
-        #        for graph_readout in parameters_graph_readout:
-        #            for molecules_combination in parameters_molecules_combination:
-        for param in params:
-            num_layers = param['num_layers']
-            learning_rate = param['learning_rate']
-            graph_readout = param['graph_readout']
-            molecules_combination = param['molecules_combination']
+                        if not os.path.isfile('test.csv'):
+                            with open('test.csv', 'w')as csv_file:
+                                csv_file.writelines(', '.join(headers))
 
-            loss, r2_train, rmse_train, r2_test, rmse_test = out_of_sample_test.process_gnn(num_layers, learning_rate, graph_readout, molecules_combination)
-            
-            # ----- Results to Excel ----- 
-            path = saveas[49:]
-            res = path.split("/")
-            path_file = 'results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1])
-            result = iter([{'molecule': res[0]+'_200epochs', 'test': res[1], 'num_layers': num_layers, 'learning_rate': learning_rate, 'graph_readout': graph_readout, 'molecules_combination': molecules_combination, 'training_loss': loss, 'r2_train': r2_train, 'rmse_train': rmse_train, 'r2_test': r2_test, 'rmse_test': rmse_test}])
+                        if not os.path.isfile(path_file):
+                            book = xlsxwriter.Workbook(path_file)
+                            sheet = book.add_worksheet("Sheet1")
+                            for (idx, header) in enumerate(headers):
+                                sheet.write(0, idx, header)
+                            book.close()
 
-            # create csv file if it does not exist
-            if not os.path.isfile('test.csv'):
-                with open('test.csv', 'w')as csv_file:
-                    csv_file.writelines(', '.join(headers))
+                        with open('test.csv', 'a+') as csv_file:
+                            book = load_workbook(path_file)
+                            sheet = book.get_sheet_by_name('Sheet1')
 
-            # create excel file if it does not exist
-            if not os.path.isfile(path_file):
-                book = xlsxwriter.Workbook(path_file)
-                sheet = book.add_worksheet("Sheet1")
-                for (idx, header) in enumerate(headers):
-                    sheet.write(0, idx, header)
-                book.close()
-
-            # open the files and start the loop
-            with open('test.csv', 'a+') as csv_file:
-                book = load_workbook(path_file)
-                sheet = book.get_sheet_by_name('Sheet1')
-
-                # loop through all dictionaries
-                for d in result:
-                    values = [d[key] for key in headers]
-                    print(values)
-                    #csv_string = '\n'+', '.join(values)
-                    # write to csv file
-                    #csv_file.write(csv_string)
-                    # write to excel file
-                    sheet.append(values)
-                book.save(filename=path_file)
-
-
-            #print('\nGNN Results:')
-            #print(gnn_results)
-
-            #df = pd.DataFrame.from_dict(gnn_results)
-            #df.sort_values(by=['molecule', 'test', 'num_layers', 'learning_rate', 'graph_readout', 'molecules_combination'], ascending=True)
-            #df.to_excel('results/graph_descriptors/WL_gnn/out_of_sample/{}/{}/results.xlsx'.format(res[0], res[1]), index=False)
+                            for d in result:
+                                values = [d[key] for key in headers]
+                                print(values)
+                                sheet.append(values)
+                            book.save(filename=path_file)
 
         return 0
 

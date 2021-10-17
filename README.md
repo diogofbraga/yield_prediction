@@ -1,6 +1,6 @@
 # yield_prediction
 
-Machine Learning applied in Chemistry to solve the reaction yield prediction problem. First task: application of non-linearity in the Weisfeiler-Lehman graph kernel in order to improve the measure of comparison between molecules and thus enhance the complexity of the support vector regression models. Second task: creation of a deep learning base to solve this problem through graph neural networks, with the extraction of molecular representations using graph convolutional layers and global read-out operations.
+**Machine Learning applied in Chemistry to solve the reaction yield prediction problem.** First task: application of non-linearity in the Weisfeiler-Lehman graph kernel in order to improve the measure of comparison between molecules and thus enhance the complexity of the support vector regression models. Second task: creation of a deep learning base to solve this problem through graph neural networks, extracting molecular features using graph convolutional layers and global read-out operations.
 
 Extension of the project (on 16 June 2021) developed by Haywood et al.<sup>1</sup> (__[yield_prediction](https://github.com/alexehaywood/yield_prediction)__: Prediction of reaction yields using support vector regression models built on structure-based and quantum chemical descriptors).
 
